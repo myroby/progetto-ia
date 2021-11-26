@@ -1,9 +1,6 @@
 package test;
 
-import java.util.Arrays;
-import java.util.StringTokenizer;
-
-import impl.Fission.Direzioni;
+import impl.Fission.*;
 
 public class Test {
 

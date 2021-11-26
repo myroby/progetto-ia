@@ -31,6 +31,15 @@ public class Mossa {
         return "MOVE " + posIniziale + "," + dir;
     }
 
+    public Tupla posInizialeToTupla() {
+        int riga = 0, colonna = 0;
+        for (int i = 0; i < Fission.RIGHE.length; i++) {
+            if (posIniziale.charAt(0) == Fission.RIGHE[i]) riga = i;
+        }
+        colonna = Character.getNumericValue(posIniziale.charAt(1)) - 1;
+        return new Tupla(riga,colonna);
+    }
+
     /****************** Setters & Getters ******************/
     public String getPosIniziale() {
         return posIniziale;

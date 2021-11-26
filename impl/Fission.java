@@ -2,8 +2,9 @@ package impl;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
+import java.util.stream.IntStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,66 +19,52 @@ public class Fission {
 	public static enum Colore { white, black } 
     public static enum Direzioni { N, E, S, O, NE, SE, SO, NO }
 	public final Cella[][] scacchiera = new Cella[NUM_RIGHE][NUM_COLONNE];
-    public final List<Cella> pedineAlleate = new ArrayList<Cella>(NUM_PEDINE);
-    public final List<Cella> pedineAvversarie = new ArrayList<Cella>(NUM_PEDINE);
+	public final List<Cella> pedineBianche = new ArrayList<Cella>(NUM_PEDINE);
+    public final List<Cella> pedineNere = new ArrayList<Cella>(NUM_PEDINE);
+	public Colore colorePedine;
+    public List<Cella> pedineAlleate;
+    public List<Cella> pedineAvversarie;
     public Socket socket;
 	public PrintWriter invia;
 	public BufferedReader ricevi;
 
 	public Fission() {
+
 		for (int i = 0; i < NUM_RIGHE; i++)
 			for (int j = 0; j < NUM_COLONNE; j++)
 				this.scacchiera[i][j] = new Cella(this,i,j);
+		
+		// le coordinate iniziali delle pedine bianche
+		int[] posWhite = new int[] {
+			1, 3,	2, 2,	3, 3,	4, 2,	3, 1,	3, 5,	
+			2, 4,	4, 4,	5, 3,	5, 5,	4, 6,	6, 4
+		};
+
+		// le coordinate iniziali delle pedine nere
+		int[] posBlack = new int[] {
+			1, 4,	2, 3,	3, 2,	4, 1,	3, 4,	2, 5,	
+			4, 3,	5, 2,	3, 6,	4, 5,	5, 4,	6, 3
+		};
+
+		// assegna il colore alle pedine iniziali
+		IntStream.iterate(0, n -> n + 2).limit(NUM_PEDINE).forEach(pos -> {
+			pedineBianche.add(scacchiera[posWhite[pos]][posWhite[pos + 1]]);
+			pedineNere.add(scacchiera[posBlack[pos]][posBlack[pos + 1]]);
+			scacchiera[posWhite[pos]][posWhite[pos + 1]].pedina = Colore.white;
+			scacchiera[posBlack[pos]][posBlack[pos + 1]].pedina = Colore.black;
+		});
+
 	}
 
-    // assegna le posizioni iniziali alle pedine e inizializza le due 
-	// liste: pedineAlleate & pedineAvversarie
-    public void assegnaPedine(Colore colore) {
-
-        List<Tupla> posizioniPedineBianche = new ArrayList<Tupla>(NUM_PEDINE);
-
-        List<Tupla> posizioniPedineNere = new ArrayList<Tupla>(NUM_PEDINE);
-    
-        posizioniPedineBianche.add(new Tupla(1,3)); posizioniPedineBianche.add(new Tupla(3,3));
-        posizioniPedineBianche.add(new Tupla(2,2)); posizioniPedineBianche.add(new Tupla(4,2)); 
-        posizioniPedineBianche.add(new Tupla(3,1)); posizioniPedineBianche.add(new Tupla(3,5)); 
-        posizioniPedineBianche.add(new Tupla(2,4)); posizioniPedineBianche.add(new Tupla(4,4)); 
-        posizioniPedineBianche.add(new Tupla(5,3)); posizioniPedineBianche.add(new Tupla(5,5)); 
-        posizioniPedineBianche.add(new Tupla(4,6)); posizioniPedineBianche.add(new Tupla(6,4)); 
-    
-        posizioniPedineNere.add(new Tupla(1,4)); posizioniPedineNere.add(new Tupla(2,3));
-        posizioniPedineNere.add(new Tupla(3,2)); posizioniPedineNere.add(new Tupla(4,1)); 
-        posizioniPedineNere.add(new Tupla(2,5)); posizioniPedineNere.add(new Tupla(3,4)); 
-        posizioniPedineNere.add(new Tupla(4,3)); posizioniPedineNere.add(new Tupla(5,2)); 
-        posizioniPedineNere.add(new Tupla(3,6)); posizioniPedineNere.add(new Tupla(4,5)); 
-        posizioniPedineNere.add(new Tupla(5,4)); posizioniPedineNere.add(new Tupla(6,3));
-
+    public void assegnaColore(Colore colore) {
+		this.colorePedine = colore;
         if (colore == Colore.white) {
-
-            posizioniPedineBianche.stream().forEach(pos -> {
-                scacchiera[pos.x][pos.y].pedina = Colore.white;
-                pedineAlleate.add(scacchiera[pos.x][pos.y]);
-            });
-
-            posizioniPedineNere.stream().forEach(pos -> {
-                scacchiera[pos.x][pos.y].pedina = Colore.black;
-                pedineAvversarie.add(scacchiera[pos.x][pos.y]);
-            });
-
+			pedineAlleate = pedineBianche;
+			pedineAvversarie = pedineNere;
         } else {
-
-            posizioniPedineBianche.stream().forEach(pos -> {
-                scacchiera[pos.x][pos.y].pedina = Colore.white;
-                pedineAvversarie.add(scacchiera[pos.x][pos.y]);
-            });
-
-            posizioniPedineNere.stream().forEach(pos -> {
-                scacchiera[pos.x][pos.y].pedina = Colore.black;
-                pedineAlleate.add(scacchiera[pos.x][pos.y]);
-            });
-
+			pedineAlleate = pedineNere;
+			pedineAvversarie = pedineBianche;
         }
-    
     }
 
 	public void connetti(String indirizzoIp, int numeroPorta) throws UnknownHostException, IOException {
@@ -86,34 +73,109 @@ public class Fission {
 		this.ricevi = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
 
-	// muove la pedina e gestisce eventuali uccisioni di pedine
+	// muove la pedina e gestisce eventuali rimozioni di pedine
 	public void muoviPedina(Mossa mossa) {
 
-		if (mossa.isAlleata()) {
+		Function<Tupla,Tupla> operation = muoviPedinaHelper(mossa.dir);
 
+		Tupla posCorrente = mossa.posInizialeToTupla(), posSuccessiva;
 
+		boolean bordoRaggiunto = false, impattoConPedina = false;
 
-		} else {
-
-
-
+		// muove la pedina fino a quando non raggiunge il bordo della scacchiera o un altra pedina
+		while (true) {
+			posCorrente = operation.apply(posCorrente);
+			posSuccessiva = operation.apply(posCorrente);
+			bordoRaggiunto = posSuccessiva.x == -1 || posSuccessiva.y == -1 || posSuccessiva.x >= NUM_RIGHE || posSuccessiva.y >= NUM_COLONNE;
+			if (bordoRaggiunto) break;
+			impattoConPedina = scacchiera[posSuccessiva.x][posSuccessiva.y].isGiocatorePresente();
+			if (impattoConPedina) break;
 		}
 
-        // TODO
+		Tupla posIniziale = mossa.posInizialeToTupla();
 
+		// se la pedina impatterà un'altra pedina andranno rimosse sia la pedina da spostare
+		// sia le pedine adiacenti
+		if (impattoConPedina) {
+
+			rimuoviPedinaSingola(posIniziale);
+
+			rimuoviPedineAdiacenti(posCorrente);
+
+		// in questo caso la pedina impatterà il bordo della scacchiera;
+		// nessuna pedina verrà rimossa ma la sua posizione dovrà essere aggiornata.
+		} else {
+
+			spostaPedina(posIniziale, posCorrente);
+
+		}
     }
+
+	// rimuove le pedine adiacenti dalla scacchiera servendosi di rimuoviPedinaSingola()
+	private void rimuoviPedineAdiacenti(Tupla posCorrente) {
+		for (int h = posCorrente.x-1; h <= posCorrente.x+1; h++) {
+			for (int k = posCorrente.y-1; k <= posCorrente.y+1; k++) {
+				if (h >= 0 && h < NUM_RIGHE && k >= 0 && k < NUM_COLONNE) {
+					rimuoviPedinaSingola(h, k);
+				}
+			}
+		}
+	}
+
+	// sposta una pedina senza rimuovere alcuna pedina
+	private void spostaPedina(Tupla start, Tupla end) {
+		Cella pedinaDaSpostare = scacchiera[start.x][start.y];
+		List<Cella> temp = (pedinaDaSpostare.isAlleata()) ? pedineAlleate : pedineAvversarie;
+		temp.remove(scacchiera[start.x][start.y]);
+		temp.add(scacchiera[end.x][end.y]);
+		scacchiera[end.x][end.y].pedina = scacchiera[start.x][start.y].pedina;
+		scacchiera[start.x][start.y].pedina = null;
+	}
+
+	// rimuove una singola pedina dalla scacchiera e dalla relativa lista
+	private void rimuoviPedinaSingola(int x, int y) {
+		if (x >= 0 && x < NUM_RIGHE && y >= 0 && y < NUM_COLONNE) {
+			Cella pedinaDaRimuovere = scacchiera[x][y];
+			List<Cella> temp = (pedinaDaRimuovere.isAlleata()) ? pedineAlleate : pedineAvversarie;
+			temp.remove(scacchiera[x][y]);
+			scacchiera[x][y].removePedina();
+		}
+	}
+
+	private void rimuoviPedinaSingola(Tupla tupla) {
+		rimuoviPedinaSingola(tupla.x,tupla.y);
+	}
+
+	// ritorna una funzione che incrementa una o più coordinate; es:
+	// se la direzione è NE allora ritorna una funzione f. applicando f su una 
+	// tupla ritorna un'altra tupla con le coordinate aggiornate:
+	// f(5,8) -> (4,9)
+	private Function<Tupla,Tupla> muoviPedinaHelper(Direzioni dir) {
+		Function<Tupla, Tupla> func = null;
+		switch (dir) {
+            case N	: return func = in -> { return new Tupla(in.x-1,in.y); };
+            case S	: return func = in -> { return new Tupla(in.x+1,in.y); };
+            case E	: return func = in -> { return new Tupla(in.x,in.y+1); };
+            case O	: return func = in -> { return new Tupla(in.x,in.y-1); };
+            case NE	: return func = in -> { return new Tupla(in.x-1,in.y+1); };
+            case NO : return func = in -> { return new Tupla(in.x-1,in.y-1); };
+            case SE	: return func = in -> { return new Tupla(in.x+1,in.y+1); };
+            case SO	: return func = in -> { return new Tupla(in.x+1,in.y-1); };
+        }
+		return func;
+	}
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
     public void scegliMossa(Mossa mossa) {
-
+		Fission.printScacchiera(this, false);
+		/*
         String posIniziale = "A0";
-		
 		Direzioni dir = Direzioni.NE;
 
         // TODO
 
-		mossa.setPosIniziale(posIniziale); mossa.setDir(dir);
-
+		mossa.setPosIniziale(posIniziale); 
+		mossa.setDir(dir);*/
     }
 
     public boolean isCellaLibera(Tupla pos) {
@@ -131,11 +193,13 @@ public class Fission {
             .filter(c -> !c.getDirezioniPossibili().isEmpty())
             .collect(Collectors.toList());
     }
+	
+	/************************ utility di test ************************/
 
-    @Override
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(NUM_COLONNE * NUM_RIGHE * 3);
-		sb.append("   1  2  3  4  5  6  7  8\n");
+		sb.append("\n   1  2  3  4  5  6  7  8\n");
 		for (int i = 0; i < NUM_RIGHE; i++) {
 			sb.append(RIGHE[i]);
 			for (int j = 0; j < NUM_COLONNE; j++) {
@@ -143,10 +207,10 @@ public class Fission {
 			}
 			sb.append("\n");
 		}
+		sb.append("\n");
 		return sb.toString();
 	}
-	
-	//utility di test
+
 	public static void printScacchiera(Fission s, boolean withColors) {
 		if (withColors) {
 			char[] st = s.toString().toCharArray();
@@ -159,6 +223,17 @@ public class Fission {
 			System.out.println(s.toString());
 		}
 	}
+
+	public void printStatoPedine() {
+		System.out.println("Le pedine alleate sono: " + pedineAlleate.size());
+		this.pedineAlleate.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
+		System.out.println("\n");
+		System.out.println("Le pedine avversarie sono: " + pedineAvversarie.size());
+		this.pedineAvversarie.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
+		System.out.println();
+	}
+
+	/*****************************************************************/
 
 	public static void main(String[] args) throws NumberFormatException, UnknownHostException, IOException {
 		
@@ -177,19 +252,31 @@ public class Fission {
 			// assegnamento colore pedine alleate
 			if (messaggio.startsWith("WELCOME")) {
 	
-				fission.assegnaPedine(Colore.valueOf(messaggio.substring(8)));
+				fission.assegnaColore(Colore.valueOf(messaggio.substring(8)));
 
-				System.out.println("Il colore è " + Colore.valueOf(messaggio.substring(8)));
+				Fission.printScacchiera(fission, false);
 				
 			// si sceglie la mossa da inviare al server
 			} else if (messaggio.startsWith("YOUR_TURN")) {
 
-				fission.scegliMossa(mossaAlleata);
+				//fission.scegliMossa(mossaAlleata);
 
-				fission.invia.print(mossaAlleata.toMessage());
+				//fission.invia.print(mossaAlleata.toMessage());
 
 				// meglio aggiornare la scacchiera DOPO l'invio del messaggio per non perdere tempo
+				//fission.muoviPedina(mossaAlleata);
+
+				mossaAlleata.setPosIniziale(messaggio.substring(10,12));
+
+				mossaAlleata.setDir(messaggio.substring(13));
+
 				fission.muoviPedina(mossaAlleata);
+
+				Fission.printScacchiera(fission, false);
+
+				fission.printStatoPedine();
+
+				System.out.println();
 			
 			// si riceve la mossa dell'avversario; bisogna aggiornare la scacchiera
 			} else if (messaggio.startsWith("OPPONENT_MOVE")) {
@@ -223,8 +310,6 @@ public class Fission {
 		}
 
 		sc.close();
-
-		fission.scacchiera[0][7].getDirezioniAdiacenti().stream().forEach(System.out::println);
 		
 		Fission.printScacchiera(fission, false);
 		

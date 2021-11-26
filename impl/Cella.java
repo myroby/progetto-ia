@@ -81,6 +81,10 @@ public class Cella {
         }
     }
 
+	public boolean isAlleata() {
+		return this.pedina == scacchiera.colorePedine;
+	}
+
 	public String print(boolean onlyColor) {
 		if (onlyColor) {
 			if (pedina == null) return "-";
@@ -92,7 +96,7 @@ public class Cella {
 	}
 
 	public String getCoordinate() {
-		return Fission.RIGHE[riga] + "" + (colonna + 1);
+		return "(" + Fission.RIGHE[riga] + "," + (colonna + 1) + ")";
 	}
 
 }
