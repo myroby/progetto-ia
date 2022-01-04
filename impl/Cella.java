@@ -39,7 +39,7 @@ public class Cella {
 
 	// ritorna le direzioni adiacenti della cella.
 	public List<Direzioni> getDirezioniAdiacenti() {
-
+		
 		// ret contiene tutte le direzioni
 		List<Direzioni> ret = new ArrayList<Direzioni>(Arrays.asList(Direzioni.values()));
 

@@ -6,9 +6,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -16,15 +17,9 @@ import java.util.ArrayList;
 public class Fission {
 	public static final int NUM_RIGHE = 8, NUM_COLONNE = 8, NUM_PEDINE = 12;
 	public static final char[] RIGHE = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
-
-	public static enum Colore {
-		white, black
-	}
-
-	public static enum Direzioni {
-		N, E, S, O, NE, SE, SO, NO
-	}
-
+	public static enum Colore { White, Black }
+	public static enum Direzioni { N, E, S, O, NE, SE, SO, NO }
+	public static enum TipoMessaggio { Welcome, YourTurn, ValidMove, OpponentMove, End }
 	public final Cella[][] scacchiera = new Cella[NUM_RIGHE][NUM_COLONNE];
 	public final List<Cella> pedineBianche = new ArrayList<Cella>(NUM_PEDINE);
 	public final List<Cella> pedineNere = new ArrayList<Cella>(NUM_PEDINE);
@@ -32,11 +27,14 @@ public class Fission {
 	public List<Cella> pedineAlleate;
 	public List<Cella> pedineAvversarie;
 	public Socket socket;
-	public PrintWriter invia;
+	public BufferedWriter invia;
 	public BufferedReader ricevi;
+	private Scanner sc;
 
-	public Fission() {
-		inizializzaScacchiera();
+	public Fission(String[] args) throws UnknownHostException, IOException {
+		this.connetti(args);
+		this.inizializzaScacchiera();
+		this.sc = new Scanner(System.in);
 	}
 
 	private void inizializzaScacchiera() {
@@ -61,15 +59,15 @@ public class Fission {
 		IntStream.iterate(0, n -> n + 2).limit(NUM_PEDINE).forEach(pos -> {
 			pedineBianche.add(scacchiera[posWhite[pos]][posWhite[pos + 1]]);
 			pedineNere.add(scacchiera[posBlack[pos]][posBlack[pos + 1]]);
-			scacchiera[posWhite[pos]][posWhite[pos + 1]].pedina = Colore.white;
-			scacchiera[posBlack[pos]][posBlack[pos + 1]].pedina = Colore.black;
+			scacchiera[posWhite[pos]][posWhite[pos + 1]].pedina = Colore.White;
+			scacchiera[posBlack[pos]][posBlack[pos + 1]].pedina = Colore.Black;
 		});
 
 	}
 
 	public void assegnaColore(Colore colore) {
 		this.colorePedine = colore;
-		if (colore == Colore.white) {
+		if (colore == Colore.White) {
 			pedineAlleate = pedineBianche;
 			pedineAvversarie = pedineNere;
 		} else {
@@ -78,9 +76,11 @@ public class Fission {
 		}
 	}
 
-	public void connetti(String indirizzoIp, int numeroPorta) throws UnknownHostException, IOException {
+	public void connetti(String[] args) throws UnknownHostException, IOException {
+		String indirizzoIp = args[0];
+		int numeroPorta = Integer.parseInt(args[1]);
 		this.socket = new Socket(indirizzoIp, numeroPorta);
-		this.invia = new PrintWriter(socket.getOutputStream(), true);
+		this.invia = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		this.ricevi = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
 
@@ -120,6 +120,7 @@ public class Fission {
 		} else {
 			spostaPedina(posIniziale, posCorrente);
 		}
+
 	}
 
 	// rimuove le pedine adiacenti dalla scacchiera servendosi di
@@ -201,7 +202,6 @@ public class Fission {
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
 	public void scegliMossa(Mossa mossa) {
-		Fission.printScacchiera(this, false);
 		/*
 		 * String posIniziale = "A0";
 		 * Direzioni dir = Direzioni.NE;
@@ -211,22 +211,45 @@ public class Fission {
 		 * mossa.setPosIniziale(posIniziale);
 		 * mossa.setDir(dir);
 		 */
+		
+		System.out.println("scegli mossa");
+		String s = sc.nextLine();
+		System.out.println("mossa scelta = " + s);
+		mossa.setPosIniziale(s.charAt(0) + "" + s.charAt(1));
+		mossa.setDir(s.substring(3));
+		System.out.println("La mossa scelta è " + mossa.posIniziale + "," + mossa.dir);
 	}
 
 	public boolean isCellaLibera(Tupla pos) {
 		return !scacchiera[pos.x][pos.y].isGiocatorePresente();
 	}
 
-	public List<Cella> getPedineAlleateCheSipossonoMuovere() {
-		return pedineAlleate.stream()
-				.filter(c -> !c.getDirezioniPossibili().isEmpty())
-				.collect(Collectors.toList());
+	public List<Cella> getPedineCheSiPossonoMuovere(boolean alleate) {
+		return (alleate ? pedineAlleate : pedineAvversarie)
+			.stream().filter(c -> !c.getDirezioniPossibili().isEmpty())
+			.collect(Collectors.toList());
 	}
 
-	public List<Cella> getPedineAvversarieCheSipossonoMuovere() {
-		return pedineAvversarie.stream()
-				.filter(c -> !c.getDirezioniPossibili().isEmpty())
-				.collect(Collectors.toList());
+	public static TipoMessaggio getTipoMessaggio(String messaggio) {
+		if (messaggio.startsWith("WELCOME")) return TipoMessaggio.Welcome;
+		else if (messaggio.startsWith("YOUR_TURN")) return TipoMessaggio.YourTurn;
+		else if (messaggio.startsWith("OPPONENT_MOVE")) return TipoMessaggio.OpponentMove;
+		else if (messaggio.startsWith("VALID_MOVE")) return TipoMessaggio.ValidMove;
+		return TipoMessaggio.End;
+	}
+
+	public void inviaMossa(Mossa mossa) {
+		try {
+			this.invia.write(mossa.toMessage() + "\n");
+			this.invia.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void termina() {
+		this.sc.close();
+		System.exit(0);
 	}
 
 	/************************ utility di test ************************/
@@ -246,35 +269,26 @@ public class Fission {
 		return sb.toString();
 	}
 
-	public static void printScacchiera(Fission s, boolean withColors) {
-		if (withColors) {
-			char[] st = s.toString().toCharArray();
-			for (int i = 0; i < st.length; i++) {
-				if (st[i] == 'W')
-					System.err.print(st[i]);
-				else
-					System.out.print(st[i]);
-			}
-			System.out.println();
-		} else {
-			System.out.println(s.toString());
-		}
-	}
-
 	public void printStatoPedine() {
 		System.out.println("Le pedine alleate sono: " + pedineAlleate.size());
 		this.pedineAlleate.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
 		System.out.println("\n");
 		System.out.println("Le pedine avversarie sono: " + pedineAvversarie.size());
 		this.pedineAvversarie.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
-		System.out.println();
+		System.out.println("\n");
 	}
 
-	/*****************************************************************/
+	public void printInfo() {
+		System.out.println("** INFO *******************");
+		System.out.println(this.toString());
+		printStatoPedine();
+	}
+
+	/**************************** main *********************************/
 
 	public static void main(String[] args) throws NumberFormatException, UnknownHostException, IOException {
 
-		Fission fission = new Fission();
+		Fission fission = new Fission(args); 
 
 		String messaggio;
 
@@ -282,74 +296,51 @@ public class Fission {
 
 		Mossa mossaAvversaria = new Mossa(false);
 
-		Scanner sc = new Scanner(System.in); // fission.connetti(args[0], Integer.parseInt(args[1]));
+		while ((messaggio = fission.ricevi.readLine()) != null) {
 
-		while (!(messaggio = sc.nextLine()).equals(".")) { // while ((messaggio = fission.leggi.readLine()) != null)
+			switch (Fission.getTipoMessaggio(messaggio)) {
 
-			// assegnamento colore pedine alleate
-			if (messaggio.startsWith("WELCOME")) {
+				case Welcome : 
+				
+					fission.assegnaColore(Colore.valueOf(messaggio.substring(8))); 
+					
+					break;
 
-				fission.assegnaColore(Colore.valueOf(messaggio.substring(8)));
+				case YourTurn : 
 
-				Fission.printScacchiera(fission, false);
+					fission.scegliMossa(mossaAlleata);
 
-				// si sceglie la mossa da inviare al server
-			} else if (messaggio.startsWith("YOUR_TURN")) {
+					fission.inviaMossa(mossaAlleata);
 
-				// fission.scegliMossa(mossaAlleata);
+					fission.muoviPedina(mossaAlleata);
 
-				// fission.invia.print(mossaAlleata.toMessage());
+					mossaAlleata.clear();
+					
+					break;
+				
+				case OpponentMove : 
 
-				// meglio aggiornare la scacchiera DOPO l'invio del messaggio per non perdere
-				// tempo
-				// fission.muoviPedina(mossaAlleata);
+					mossaAvversaria.setInfo(messaggio.substring(14, 16), messaggio.substring(17));
 
-				mossaAlleata.setPosIniziale(messaggio.substring(10, 12));
+					fission.muoviPedina(mossaAvversaria);
 
-				mossaAlleata.setDir(messaggio.substring(13));
+					mossaAvversaria.clear();
 
-				fission.muoviPedina(mossaAlleata);
+					break;
 
-				Fission.printScacchiera(fission, false);
+				case ValidMove : 
+				
+					break;
+				
+				case End : default :
 
-				fission.printStatoPedine();
-
-				System.out.println();
-
-				// si riceve la mossa dell'avversario; bisogna aggiornare la scacchiera
-			} else if (messaggio.startsWith("OPPONENT_MOVE")) {
-
-				mossaAvversaria.setPosIniziale(messaggio.substring(14, 16));
-
-				mossaAvversaria.setDir(messaggio.substring(17));
-
-				fission.muoviPedina(mossaAvversaria);
-
-				// la mossa è valida. che si fa?
-			} else if (messaggio.startsWith("VALID_MOVE")) {
-
-				System.out.println("Mossa Valida");
-
-				// forse forse abbiamo vinto ma sicuramente abbiamo perso.
-				// il programma viene chiuso
-			} else if (messaggio.startsWith("DEFEAT") || messaggio.startsWith("ILLEGAL_MOVE") ||
-					messaggio.startsWith("VICTORY") || messaggio.startsWith("TIMEOUT") ||
-					messaggio.startsWith("TIE")) {
-
-				System.exit(0);
-
-				// è arrivato un messaggio generico
-			} else {
-
-				System.out.println(messaggio);
+					fission.termina();
 
 			}
 
+			fission.printInfo();
+
 		}
-
-		sc.close();
-
-		Fission.printScacchiera(fission, false);
 
 	}
 

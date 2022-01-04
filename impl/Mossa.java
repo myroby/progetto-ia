@@ -27,6 +27,11 @@ public class Mossa {
         this.dir = Direzioni.valueOf(dir);
     }
 
+    public void clear() {
+        this.dir = null;
+        this.posIniziale = null;
+    }
+
     public String toMessage() {
         return "MOVE " + posIniziale + "," + dir;
     }
@@ -38,6 +43,11 @@ public class Mossa {
         }
         colonna = Character.getNumericValue(posIniziale.charAt(1)) - 1;
         return new Tupla(riga,colonna);
+    }
+
+    public void setInfo(String posIniziale, String dir) {
+        this.setPosIniziale(posIniziale);
+        this.setDir(dir);
     }
 
     /****************** Setters & Getters ******************/
