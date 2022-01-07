@@ -9,14 +9,14 @@ import impl.Fission.Colore;
 import impl.Fission.Direzioni;
 
 public class Cella {
-	public final Fission scacchiera;
+	public final Configurazione configurazione;
 	public final int riga;
 	public final int colonna;
 	public Colore pedina;
 
-	public Cella(Fission scacchiera, int riga, int colonna) {
+	public Cella(Configurazione configurazione, int riga, int colonna) {
 		super();
-		this.scacchiera = scacchiera;
+		this.configurazione = configurazione;
 		this.riga = riga;
 		this.colonna = colonna;
 	}
@@ -29,11 +29,17 @@ public class Cella {
 		this.pedina = null;
 	}
 
+	public List<Mossa> getMossePossibili() {
+		return getDirezioniPossibili().stream().map(dir -> 
+			new Mossa(riga, colonna + 1, dir, configurazione.colorePedine == pedina)
+		).collect(Collectors.toList());
+	}
+
 	// da invocare solo se nella cella è presente una pedina. ritorna le
 	// direzioni possibili che la pedina può intraprendere
 	public List<Direzioni> getDirezioniPossibili() {
 		return getDirezioniAdiacenti().stream()
-			.filter(direzione -> scacchiera.isCellaLibera(valutaDirezione(direzione)))
+			.filter(direzione -> configurazione.isCellaLibera(valutaDirezione(direzione)))
 			.collect(Collectors.toList());
 	}
 
@@ -48,7 +54,7 @@ public class Cella {
 			ret.remove(Direzioni.N);
 			ret.remove(Direzioni.NE);
 			ret.remove(Direzioni.NO);
-		} else if (riga == Fission.NUM_RIGHE - 1) {
+		} else if (riga == Configurazione.NUM_RIGHE - 1) {
 			ret.remove(Direzioni.S);
 			ret.remove(Direzioni.SE);
 			ret.remove(Direzioni.SO);
@@ -58,7 +64,7 @@ public class Cella {
 			ret.remove(Direzioni.O);
 			ret.remove(Direzioni.NO);
 			ret.remove(Direzioni.SO);
-		} else if (colonna == Fission.NUM_COLONNE - 1) {
+		} else if (colonna == Configurazione.NUM_COLONNE - 1) {
 			ret.remove(Direzioni.E);
 			ret.remove(Direzioni.NE);
 			ret.remove(Direzioni.SE);
@@ -82,7 +88,7 @@ public class Cella {
     }
 
 	public boolean isAlleata() {
-		return this.pedina == scacchiera.colorePedine;
+		return this.pedina == configurazione.colorePedine;
 	}
 
 	public String print(boolean onlyColor) {
@@ -90,13 +96,13 @@ public class Cella {
 			if (pedina == null) return "-";
 			return "" + pedina.toString().charAt(0);
 		} else {
-			if (pedina == null) return "" + Fission.RIGHE[riga] + colonna;
-			return "" + Fission.RIGHE[riga] + colonna + "(" + pedina.toString().charAt(0) + "(";
+			if (pedina == null) return "" + Configurazione.RIGHE[riga] + colonna;
+			return "" + Configurazione.RIGHE[riga] + colonna + "(" + pedina.toString().charAt(0) + "(";
 		}
 	}
 
 	public String getCoordinate() {
-		return "(" + Fission.RIGHE[riga] + "," + (colonna + 1) + ")";
+		return "(" + Configurazione.RIGHE[riga] + "," + (colonna + 1) + ")";
 	}
 
 }

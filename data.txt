@@ -1,0 +1,728 @@
+Mossa analizzata = MOVE B4,N
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  W  -  -  -  -
+B  -  -  -  -  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE B4,E
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  -  B  -  -  W
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE B4,NE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  W  -  -  -
+B  -  -  -  -  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE B4,NO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  W  -  -  -  -  -
+B  -  -  -  -  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE C3,N
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  W  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  -  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE C3,E
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  -  -  -  -  -
+C  -  -  -  -  -  B  -  -
+D  -  W  -  -  -  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE C3,NO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  W  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  -  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE E3,SO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  -  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  W  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE D2,N
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  W  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  -  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE D2,E
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  -  -  W  B  -  -
+D  -  -  -  -  B  W  B  -
+E  -  -  -  -  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE D2,SO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  -  B  W  B  W  B  -
+E  W  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE D2,NO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  W  -  W  B  W  B  -  -
+D  -  -  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE D6,NE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  W
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  -  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE C5,NE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  W  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  -  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE F4,SO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  -  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  W  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE F6,S
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  -  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  W  -  -
+
+
+
+Mossa analizzata = MOVE F6,O
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  -  -  -  W  -
+F  -  -  B  -  -  -  -  -
+G  -  -  -  -  -  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE F6,SE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  -  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  W
+
+
+
+Mossa analizzata = MOVE E7,S
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  -  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  W  -
+
+
+
+Mossa analizzata = MOVE E7,O
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  -  -  -  -
+E  -  B  W  B  -  -  -  -
+F  -  -  B  W  -  -  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE E7,NE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  W
+E  -  B  W  B  W  B  -  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE E7,SE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  -  -
+F  -  -  B  W  B  W  -  W
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE G5,S
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  -  -  -  -
+H  -  -  -  -  W  -  -  -
+
+
+
+Mossa analizzata = MOVE G5,O
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  W  -  -  B  -  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+
+Mossa analizzata = MOVE G5,SE
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  -  -  -  -
+H  -  -  -  -  -  W  -  -
+
+
+
+Mossa analizzata = MOVE G5,SO
+ Nodo parent 
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  W  -  -  -
+H  -  -  -  -  -  -  -  -
+
+
+Nodo figlia
+
+   1  2  3  4  5  6  7  8
+A  -  -  -  -  -  -  -  -
+B  -  -  -  W  B  -  -  -
+C  -  -  W  B  W  B  -  -
+D  -  W  B  W  B  W  B  -
+E  -  B  W  B  W  B  W  -
+F  -  -  B  W  B  W  -  -
+G  -  -  -  B  -  -  -  -
+H  -  -  -  W  -  -  -  -
+
+
+

@@ -10,9 +10,17 @@ public class Mossa {
 
     public boolean alleata;
 
+    public int index;
+
     public Mossa(boolean alleata) {
         super();
         this.alleata = alleata;
+    }
+
+    public Mossa(int x, int y, Direzioni dir, boolean alleata) {
+        super();
+        this.posIniziale = Configurazione.RIGHE[x] + "" + y;
+        this.dir = dir;
     }
 
     public Mossa(String posIniziale, Direzioni dir, boolean alleata) {
@@ -38,16 +46,16 @@ public class Mossa {
 
     public Tupla posInizialeToTupla() {
         int riga = 0, colonna = 0;
-        for (int i = 0; i < Fission.RIGHE.length; i++) {
-            if (posIniziale.charAt(0) == Fission.RIGHE[i]) riga = i;
+        for (int i = 0; i < Configurazione.RIGHE.length; i++) {
+            if (posIniziale.charAt(0) == Configurazione.RIGHE[i]) riga = i;
         }
         colonna = Character.getNumericValue(posIniziale.charAt(1)) - 1;
         return new Tupla(riga,colonna);
     }
 
-    public void setInfo(String posIniziale, String dir) {
-        this.setPosIniziale(posIniziale);
-        this.setDir(dir);
+    public void setMossa(String messaggio) {
+        this.setPosIniziale(messaggio.substring(14, 16));
+        this.setDir(messaggio.substring(17));
     }
 
     /****************** Setters & Getters ******************/
