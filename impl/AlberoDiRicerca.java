@@ -193,7 +193,7 @@ public class AlberoDiRicerca {
             } // end step n° 3
 
             // step n° 4
-            if (!hoRimossoP) {
+            if (!x.isEtichettato && !hoRimossoP) {
 
                 float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta) : Math.max(p.etichetta, x.etichetta);
 
