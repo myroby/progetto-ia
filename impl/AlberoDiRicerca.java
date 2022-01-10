@@ -1,25 +1,35 @@
 package impl;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
+import java.util.Deque;
 
 public class AlberoDiRicerca {
 
-    public enum Tipo { Max, Min }
+    public enum Tipo {
+        Max, Min
+    }
 
-    private static class Nodo {
+    private static class Nodo implements Comparable<Nodo> {
 
         Configurazione conf;
+
+        Nodo parent;
 
         Tipo tipo;
 
         List<Nodo> figli;
 
-        public Nodo(Configurazione conf, Tipo tipo, int length) {
+        boolean isEtichettato;
+
+        float etichetta;
+
+        public Nodo(Configurazione conf, Nodo parent, Tipo tipo, int length) {
 
             this.conf = conf;
+
+            this.parent = parent;
 
             this.tipo = tipo;
 
@@ -27,90 +37,197 @@ public class AlberoDiRicerca {
 
         }
 
-    }
+        public void setEtichetta(float e) {
+            this.isEtichettato = true;
+            this.etichetta = e;
+        }
 
-    public Nodo radice;
+        public boolean isMinimizzatore() {
+            return this.tipo == Tipo.Min;
+        }
 
-    public int profondita;
+        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        public boolean isFoglia() {
+            return false;
+        }
 
-    public Queue<Nodo> nodiDaEspandere = new LinkedList<Nodo>();
+        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        public List<Nodo> getAntenatiMinimizzatori() {
+            return null;
+        }
 
-    // generiamo l'albero. Il prossimo avrà come radice un figlio di questo albero
-    // questo costruttore verrà eseguito solo una volta
-    public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
+        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        public List<Nodo> getAntenatiMassimizzatori() {
+            return null;
+        }
 
-        StringBuilder sb = new StringBuilder(500);
+        @Override
+        public int compareTo(Nodo other) {
+            return Float.compare(this.etichetta, other.etichetta);
+        }
 
-        this.radice = new Nodo(radice, (isMassimizzatore) ? Tipo.Max : Tipo.Min, 10);
+        public List<Nodo> getFigli() {
 
-        this.profondita = 1;
+            if (!this.figli.isEmpty()) return this.figli;
 
-        this.nodiDaEspandere.add(this.radice);
+            this.conf.getMossePossibili(this.tipo == Tipo.Max).stream().forEach(mossa -> {
 
-        while (this.profondita < maxProfondita && !nodiDaEspandere.isEmpty()) {
-
-            Nodo nodoCorrente = nodiDaEspandere.poll();
-
-            boolean isNodoCorrenteMax = nodoCorrente.tipo == Tipo.Max;
-
-            Tipo tipoDeiFigli = (isNodoCorrenteMax) ? Tipo.Min : Tipo.Max;
-
-            List<Mossa> mossePossibili = nodoCorrente.conf.getMossePossibili(isNodoCorrenteMax);
-
-            for (Mossa m : mossePossibili) System.out.println("mossa = " + m.toMessage());
-
-            mossePossibili.stream().forEach(mossa -> {
-
-                String text = "Mossa analizzata = " + mossa.toMessage() + "\n Nodo parent \n" + 
-                    nodoCorrente.conf.toString();
-
-                Configurazione confFiglia = new Configurazione(nodoCorrente.conf, mossa);
-
-                Nodo nodoFiglia = new Nodo(confFiglia, tipoDeiFigli , 10);
-                
-                nodoCorrente.figli.add(nodoFiglia);
-
-                addNodoDaEspandere(nodoFiglia, profondita);
-
-                text += "\nNodo figlia\n" + nodoFiglia.conf.toString() + "\n\n";
-
-                sb.append(text);
+                this.figli.add(new Nodo(new Configurazione(this.conf, mossa), this, (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50));
 
             });
 
-            this.profondita++;
+            return this.figli;
 
         }
-/*********************serve solo per test ***************************************
-        File file = new File("data.txt");
 
-        try {
-            FileWriter bf = new FileWriter(file);
-            bf.append(sb.toString());
-            bf.flush();
-            bf.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-*/
     }
 
-    public void addNodoDaEspandere(Nodo nodo, int profondita) {
+    public Nodo root;
 
-        //if (profondita == 3) return;
+    public int profondita;
 
-        // if (foglia) non espandere ....
+    public Deque<Nodo> list = new ArrayDeque<Nodo>(50); // 50 ?????????????????????
 
-        //this.nodiDaEspandere.add(nodo);
+    public float calcolaAlpha(Tipo tipo, List<Nodo> fratelliDiP, List<Nodo> antenatiDiP) {
+
+        float alpha;
+
+        if (tipo == Tipo.Min) {
+
+            // se alpha non esiste
+            if (fratelliDiP.size() == 1 || antenatiDiP.isEmpty()) { // DA CONTROLLARE
+
+                alpha = Float.NEGATIVE_INFINITY;
+
+            // se alpha esiste (esiste davvero ?????)
+            } else {
+
+                float maxFratelliDiP = fratelliDiP.stream().max((a, b) -> a.compareTo(b)).get().etichetta;
+
+                float maxAntenatiDiP = antenatiDiP.stream().max((a, b) -> a.compareTo(b)).get().etichetta;
+
+                alpha = Math.max(maxFratelliDiP, maxAntenatiDiP);
+
+            }
+
+        } else {
+
+            // se alpha non esiste
+            if (fratelliDiP.size() == 1 || antenatiDiP.isEmpty()) { // DA CONTROLLARE
+
+                alpha = Float.POSITIVE_INFINITY;
+
+            // se alpha esiste (esiste davvero ?????)
+            } else {
+
+                float minFratelliDiP = fratelliDiP.stream().min((a, b) -> a.compareTo(b)).get().etichetta;
+
+                float minAntenatiDiP = antenatiDiP.stream().min((a, b) -> a.compareTo(b)).get().etichetta;
+
+                alpha = Math.min(minFratelliDiP, minAntenatiDiP);
+
+            }
+
+        }
+
+        return alpha;
+
+    }
+
+    // generiamo l'albero. Il prossimo avrà come radice un figlio di questo albero.
+    // questo costruttore verrà eseguito solo una volta
+    public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
+
+        // step n° 1
+        this.list.push(new Nodo(radice, null, (isMassimizzatore) ? Tipo.Max : Tipo.Min, 10));
+
+        // step n° 2
+        while (!this.root.isEtichettato) {
+
+            Nodo x = this.list.pop(),   p = x.parent;
+
+            // serve per sapere se entrare nello step n° 4 oppure no
+            boolean hoRimossoP = false; // VA QUI ???????
+
+            // step n° 3
+            if (x.isEtichettato) {
+
+                List<Nodo> fratelliDiP = p.parent.figli,    antenatiDiP;
+
+                float alpha;
+
+                if (p.isMinimizzatore()) {
+
+                    antenatiDiP = p.getAntenatiMinimizzatori();
+
+                    alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
+
+                    if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON ESISTONO ??????
+
+                        hoRimossoP = true;
+
+                        this.list.remove(p);
+
+                        this.list.removeAll(p.figli);
+
+                    }
+
+                } else {
+
+                    antenatiDiP = p.getAntenatiMinimizzatori();
+
+                    alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
+
+                    if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON ESISTONO ??????
+
+                        hoRimossoP = true;
+
+                        this.list.remove(p);
+
+                        this.list.removeAll(p.figli);
+
+                    }
+
+                }
+
+            } // end step n° 3
+
+            // step n° 4
+            if (!hoRimossoP) {
+
+                float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta) : Math.max(p.etichetta, x.etichetta);
+
+                p.setEtichetta(valoreEtichettaParent);
+
+            }
+
+            // step n° 5 (BISOGNA CONTROLLARE)
+            if (!x.isEtichettato && (x.isFoglia() || profondita == maxProfondita)) {
+
+                x.setEtichetta(euristica(x.conf));
+
+                this.list.push(x);
+
+            // step n° 6
+            } else {
+
+                x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
+
+                x.getFigli().forEach(figlio -> this.list.push(figlio));
+
+                this.list.push(x);
+
+            }
+
+        } // end while
+
     }
 
     public float euristica(Configurazione configurazione) {
         // prendo l'attacco migliore del nemico
         Mossa mossaAvversario = configurazione.getMossaMigliore(false);
         int numPedine = configurazione.pedineAlleate.size() - configurazione.pedineAvversarie.size();
-        if ((mossaAvversario == null && configurazione.mossaMiglioreAlleata.index == 0) || 
+        if ((mossaAvversario == null && configurazione.mossaMiglioreAlleata.index == 0) ||
                 mossaAvversario.index == configurazione.mossaMiglioreAlleata.index)
             return numPedine / 12;
         else if (mossaAvversario == null)
@@ -124,9 +241,10 @@ public class AlberoDiRicerca {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
-        sb.append(radice.conf.toString() + "\n\n\n");
-        for (Nodo n : radice.figli) sb.append(n.conf.toString() + "\n\n\n");
+        sb.append(root.conf.toString() + "\n\n\n");
+        for (Nodo n : root.figli)
+            sb.append(n.conf.toString() + "\n\n\n");
         return sb.toString();
     }
-    
+
 }
