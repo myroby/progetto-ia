@@ -36,6 +36,10 @@ public class Configurazione {
     public Configurazione() {
 
         this.inizializzaScacchiera();
+
+        // da cambiare
+        this.pedineAlleate = this.pedineBianche;
+		this.pedineAvversarie = this.pedineNere;
         
     }
 
@@ -106,6 +110,8 @@ public class Configurazione {
 	}
 
     public boolean isCellaLibera(Tupla pos) {
+		if (pos.x < 0 || pos.y < 0) return false;
+		if (pos.x >= 8 || pos.y >= 8) return false;
 		return !scacchiera[pos.x][pos.y].isGiocatorePresente();
 	}
 
@@ -325,12 +331,16 @@ public class Configurazione {
 			}
 		};
 
-        return ((isMassimizzatore) ? pedineAlleate : pedineAvversarie)
-            .stream()
-            .map(pedina -> pedina.getMossePossibili())
-			.flatMap(Collection::stream)
-			.max(comparator)
-			.get();
+		Mossa mossaMigliore = ((isMassimizzatore) ? pedineAlleate : pedineAvversarie)
+		.stream()
+		.map(pedina -> pedina.getMossePossibili())
+		.flatMap(Collection::stream)
+		.max(comparator)
+		.get();
+
+		mossaMiglioreAlleata = mossaMigliore;
+
+        return this.mossaMiglioreAlleata;
     }
     
 }

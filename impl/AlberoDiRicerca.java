@@ -109,7 +109,11 @@ public class AlberoDiRicerca {
 
     public int profondita;
 
+    public int maxProfondita;
+
     public Deque<Nodo> list = new ArrayDeque<Nodo>(50); // 50 ?????????????????????
+
+    public List<Nodo> foglieCorr = new ArrayList<Nodo>();
 
     public float calcolaAlpha(Tipo tipo, List<Nodo> fratelliDiP, List<Nodo> antenatiDiP) {
 
@@ -118,7 +122,7 @@ public class AlberoDiRicerca {
         if (tipo == Tipo.Min) {
 
             // se alpha non esiste
-            if (fratelliDiP.size() == 1 || antenatiDiP.isEmpty()) { // DA CONTROLLARE
+            if (fratelliDiP.size() == 1 && antenatiDiP.isEmpty()) { // DA CONTROLLARE
 
                 alpha = Float.NEGATIVE_INFINITY;
 
@@ -136,7 +140,7 @@ public class AlberoDiRicerca {
         } else {
 
             // se alpha non esiste
-            if (fratelliDiP.size() == 1 || antenatiDiP.isEmpty()) { // DA CONTROLLARE
+            if (fratelliDiP.size() == 1 && antenatiDiP.isEmpty()) { // DA CONTROLLARE
 
                 alpha = Float.POSITIVE_INFINITY;
 
@@ -165,23 +169,26 @@ public class AlberoDiRicerca {
             if (figlio.conf.mossaPrecedente.equals(mossa)) {
 
                 this.root = figlio;
-
+                this.root.parent = null;
                 break;
 
             }
 
         }
 
-        return this;
+        List<Nodo> foglieF = new ArrayList<Nodo>();
+        for (Nodo foglia : this.foglieCorr) {
+            foglieF.addAll(foglia.getFigli());
+        }
+        foglieCorr = foglieF;
+        this.list.clear();
 
-    }
+        //MODIFICA ETICHETTE
 
-    // generiamo l'albero. Il prossimo avrà come radice un figlio di questo albero.
-    // questo costruttore verrà eseguito solo una volta
-    public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
+        profondita = 0;
 
         // step n° 1
-        this.list.push(new Nodo(radice, null, (isMassimizzatore) ? Tipo.Max : Tipo.Min, 10));
+        this.list.push(new Nodo(this.root.conf, null, (this.root.tipo== Tipo.Min) ? Tipo.Max : Tipo.Min, 10));
 
         // step n° 2
         while (!this.root.isEtichettato) {
@@ -250,10 +257,9 @@ public class AlberoDiRicerca {
             if (!x.isEtichettato && (x.isFoglia() || profondita == maxProfondita)) {
 
                 x.setEtichetta(euristica(x.conf));
-
+                
                 this.list.push(x);
-
-                // step n° 6
+            // step n° 6
             } else {
 
                 x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
@@ -261,6 +267,139 @@ public class AlberoDiRicerca {
                 x.getFigli().forEach(figlio -> this.list.push(figlio));
 
                 this.list.push(x);
+
+            }
+
+        } // end while
+
+
+
+
+        //FINE MODIFICA ETICHETTE
+
+
+
+
+        return this;
+
+    }
+
+    // generiamo l'albero. Il prossimo avrà come radice un figlio di questo albero.
+    // questo costruttore verrà eseguito solo una volta
+    public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
+
+        this.maxProfondita = maxProfondita;
+
+        this.root = new Nodo(radice, null, (isMassimizzatore) ? Tipo.Max : Tipo.Min, 10);
+
+        // step n° 1
+        this.list.push(this.root);
+
+        System.out.println("STEP 1");
+
+        // step n° 2
+        while (!this.root.isEtichettato || this.root.etichetta != Float.POSITIVE_INFINITY || this.root.etichetta != Float.NEGATIVE_INFINITY) {
+
+            System.out.println("STEP 2");
+
+            Nodo x = this.list.pop(), p = x.parent;
+
+            x.getFigli();
+
+            // serve per sapere se entrare nello step n° 4 oppure no
+            boolean hoRimossoP = false; // VA QUI ???????
+
+            // step n° 3    DA CONTROLLARE
+            if (x.isEtichettato && p != null) {
+
+                System.out.println("STEP 3");
+
+                List<Nodo> fratelliDiP, antenatiDiP;
+
+                float alpha;
+
+                // TODO DA CONTROLLARE
+                if (p.parent != null) {
+
+                    fratelliDiP = p.parent.figli;
+
+                    if (p.isMinimizzatore()) {
+
+                        antenatiDiP = p.getAntenatiMinimizzatori();
+    
+                        alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
+    
+                        if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
+                                                    // ESISTONO ??????
+    
+                            hoRimossoP = true;
+    
+                            this.list.remove(p);
+    
+                            this.list.removeAll(p.figli);
+    
+                        }
+    
+                    } else {
+    
+                        antenatiDiP = p.getAntenatiMassimizzatori();
+    
+                        alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
+    
+                        if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
+                                                    // ESISTONO ??????
+    
+                            hoRimossoP = true;
+    
+                            this.list.remove(p);
+    
+                            this.list.removeAll(p.figli);
+    
+                        }
+    
+                    }
+
+                }
+
+                
+
+                
+
+            } // end step n° 3
+
+            // step n° 4
+            if (!x.isEtichettato && x.parent != null && !hoRimossoP) {
+
+                System.out.println("STEP 4");
+
+                float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta)
+                        : Math.max(p.etichetta, x.etichetta);
+
+                p.setEtichetta(valoreEtichettaParent);
+
+            }
+
+            // step n° 5 (BISOGNA CONTROLLARE)
+            if (!x.isEtichettato && (x.isFoglia() || profondita == maxProfondita)) {
+
+                System.out.println("STEP 5");
+
+                x.setEtichetta(euristica(x.conf));
+                
+                this.list.push(x);
+                foglieCorr.add(x);
+                // step n° 6
+            } else {
+
+                System.out.println("STEP 6");
+
+                x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
+
+                x.figli.forEach(figlio -> this.list.push(figlio));
+
+                this.list.addLast(x);
+
+                profondita++;
 
             }
 
@@ -287,8 +426,22 @@ public class AlberoDiRicerca {
     public String toString() {
         StringBuilder sb = new StringBuilder(100);
         sb.append(root.conf.toString() + "\n\n\n");
-        for (Nodo n : root.figli)
-            sb.append(n.conf.toString() + "\n\n\n");
+        Deque<String> indici = new ArrayDeque<String>();
+        Deque<Nodo> temp = new ArrayDeque<Nodo>(50);
+        temp.push(root);
+        indici.add("00");
+        int i = 0;
+        while (!temp.isEmpty() )
+            {
+                Nodo nodoN = temp.pop();
+                sb.append(nodoN.conf.toString());
+                sb.append(indici.pop());
+                int j=0;
+                for (Nodo f: nodoN.figli)
+                    {j++; temp.addLast(f); indici.addLast(i+""+j); }
+                i++;
+            }
+
         return sb.toString();
     }
 

@@ -35,7 +35,7 @@ public class Fission {
 
 	public void warmup() {
 		this.configurazioneCorrente = new Configurazione();
-		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 20);
+		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 1);
 		System.out.println(this.albero.toString());
 	}
 
