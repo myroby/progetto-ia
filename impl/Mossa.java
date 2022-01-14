@@ -58,6 +58,15 @@ public class Mossa {
         this.setDir(messaggio.substring(17));
     }
 
+    @Override
+    public boolean equals(Object x) {
+        if (x == null) return false;
+        if (!(x instanceof Mossa)) return false;
+        Mossa m = (Mossa) x;
+        return m.posIniziale.equals(this.posIniziale) &&
+                m.dir.equals(this.dir) && m.alleata == this.alleata;
+    }
+
     /****************** Setters & Getters ******************/
     public String getPosIniziale() {
         return posIniziale;

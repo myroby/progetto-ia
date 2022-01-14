@@ -23,7 +23,7 @@ public class Fission {
 
 	public Fission(String[] args) throws UnknownHostException, IOException {
 		this.connetti(args);
-		this.configurazioneCorrente = new Configurazione();
+		this.warmup();
 		this.sc = new Scanner(System.in);
 	}
 
@@ -34,12 +34,16 @@ public class Fission {
 	}
 
 	public void warmup() {
-		this.albero = new AlberoDiRicerca(configurazioneCorrente, colorePedine == Colore.White, 20);
+		this.configurazioneCorrente = new Configurazione();
+		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 20);
 		System.out.println(this.albero.toString());
 	}
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
 	public void scegliMossa(Mossa mossa) {
+
+		this.albero.getMossaMigliore(mossa);
+
 		/*
 		 * String posIniziale = "A0";
 		 * Direzioni dir = Direzioni.NE;
@@ -48,7 +52,7 @@ public class Fission {
 		 * 
 		 * mossa.setPosIniziale(posIniziale);
 		 * mossa.setDir(dir);
-		 */
+		 
 		
 		System.out.println("scegli mossa");
 		String s = sc.nextLine();
@@ -56,6 +60,7 @@ public class Fission {
 		mossa.setPosIniziale(s.charAt(0) + "" + s.charAt(1));
 		mossa.setDir(s.substring(3));
 		System.out.println("La mossa scelta è " + mossa.posIniziale + "," + mossa.dir);
+		*/
 	}
 
 	public static TipoMessaggio getTipoMessaggio(String messaggio) {

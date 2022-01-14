@@ -2,6 +2,7 @@ package impl;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Deque;
 
@@ -46,19 +47,39 @@ public class AlberoDiRicerca {
             return this.tipo == Tipo.Min;
         }
 
-        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // TODO !!!!!!!!!!! CONTROLLARE
         public boolean isFoglia() {
-            return false;
+            return figli.isEmpty();
         }
 
-        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // TODO !!!!!!!!!!!!!CONTROLLARE
         public List<Nodo> getAntenatiMinimizzatori() {
-            return null;
+            List<Nodo> antenati = new ArrayList<Nodo>(100);
+            getAntenatiMinimizzatori(this, antenati);
+            return antenati;
         }
 
-        // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        private void getAntenatiMinimizzatori(Nodo nodo, List<Nodo> antenati) {
+            if (nodo.parent == null)
+                return;
+            if (nodo.parent.isMinimizzatore())
+                antenati.add(nodo.parent);
+            getAntenatiMassimizzatori(nodo.parent, antenati);
+        }
+
+        // TODO !!!!!!!!!!!!!!CONTROLLARE
         public List<Nodo> getAntenatiMassimizzatori() {
-            return null;
+            List<Nodo> antenati = new ArrayList<Nodo>(100);
+            getAntenatiMassimizzatori(this, antenati);
+            return antenati;
+        }
+
+        private void getAntenatiMassimizzatori(Nodo nodo, List<Nodo> antenati) {
+            if (nodo.parent == null)
+                return;
+            if (!nodo.parent.isMinimizzatore())
+                antenati.add(nodo.parent);
+            getAntenatiMassimizzatori(nodo.parent, antenati);
         }
 
         @Override
@@ -68,11 +89,13 @@ public class AlberoDiRicerca {
 
         public List<Nodo> getFigli() {
 
-            if (!this.figli.isEmpty()) return this.figli;
+            if (!this.figli.isEmpty())
+                return this.figli;
 
             this.conf.getMossePossibili(this.tipo == Tipo.Max).stream().forEach(mossa -> {
 
-                this.figli.add(new Nodo(new Configurazione(this.conf, mossa), this, (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50));
+                this.figli.add(new Nodo(new Configurazione(this.conf, mossa), this,
+                        (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50));
 
             });
 
@@ -99,7 +122,7 @@ public class AlberoDiRicerca {
 
                 alpha = Float.NEGATIVE_INFINITY;
 
-            // se alpha esiste (esiste davvero ?????)
+                // se alpha esiste (esiste davvero ?????)
             } else {
 
                 float maxFratelliDiP = fratelliDiP.stream().max((a, b) -> a.compareTo(b)).get().etichetta;
@@ -117,7 +140,7 @@ public class AlberoDiRicerca {
 
                 alpha = Float.POSITIVE_INFINITY;
 
-            // se alpha esiste (esiste davvero ?????)
+                // se alpha esiste (esiste davvero ?????)
             } else {
 
                 float minFratelliDiP = fratelliDiP.stream().min((a, b) -> a.compareTo(b)).get().etichetta;
@@ -134,6 +157,25 @@ public class AlberoDiRicerca {
 
     }
 
+    // TODO vanno ricalcolate le etichette
+    public AlberoDiRicerca eseguiMossa(Mossa mossa) {
+
+        for (Nodo figlio : this.root.figli) {
+
+            if (figlio.conf.mossaPrecedente.equals(mossa)) {
+
+                this.root = figlio;
+
+                break;
+
+            }
+
+        }
+
+        return this;
+
+    }
+
     // generiamo l'albero. Il prossimo avrà come radice un figlio di questo albero.
     // questo costruttore verrà eseguito solo una volta
     public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
@@ -144,7 +186,7 @@ public class AlberoDiRicerca {
         // step n° 2
         while (!this.root.isEtichettato) {
 
-            Nodo x = this.list.pop(),   p = x.parent;
+            Nodo x = this.list.pop(), p = x.parent;
 
             // serve per sapere se entrare nello step n° 4 oppure no
             boolean hoRimossoP = false; // VA QUI ???????
@@ -152,7 +194,7 @@ public class AlberoDiRicerca {
             // step n° 3
             if (x.isEtichettato) {
 
-                List<Nodo> fratelliDiP = p.parent.figli,    antenatiDiP;
+                List<Nodo> fratelliDiP = p.parent.figli, antenatiDiP;
 
                 float alpha;
 
@@ -162,7 +204,8 @@ public class AlberoDiRicerca {
 
                     alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
 
-                    if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON ESISTONO ??????
+                    if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
+                                                // ESISTONO ??????
 
                         hoRimossoP = true;
 
@@ -174,11 +217,12 @@ public class AlberoDiRicerca {
 
                 } else {
 
-                    antenatiDiP = p.getAntenatiMinimizzatori();
+                    antenatiDiP = p.getAntenatiMassimizzatori();
 
                     alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
 
-                    if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON ESISTONO ??????
+                    if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
+                                                // ESISTONO ??????
 
                         hoRimossoP = true;
 
@@ -195,7 +239,8 @@ public class AlberoDiRicerca {
             // step n° 4
             if (!x.isEtichettato && !hoRimossoP) {
 
-                float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta) : Math.max(p.etichetta, x.etichetta);
+                float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta)
+                        : Math.max(p.etichetta, x.etichetta);
 
                 p.setEtichetta(valoreEtichettaParent);
 
@@ -208,7 +253,7 @@ public class AlberoDiRicerca {
 
                 this.list.push(x);
 
-            // step n° 6
+                // step n° 6
             } else {
 
                 x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
@@ -245,6 +290,13 @@ public class AlberoDiRicerca {
         for (Nodo n : root.figli)
             sb.append(n.conf.toString() + "\n\n\n");
         return sb.toString();
+    }
+
+    // TODO deve aggiornare l'albero (la radice)
+    public void getMossaMigliore(Mossa mossa) {
+
+        
+
     }
 
 }

@@ -31,6 +31,8 @@ public class Configurazione {
 
 	public Mossa mossaMiglioreAlleata;
 
+	public Mossa mossaPrecedente; // la mossa che ha portato parent a diventare this
+
     public Configurazione() {
 
         this.inizializzaScacchiera();
@@ -44,6 +46,8 @@ public class Configurazione {
 		System.out.println("prima\n" + this.toString());
 
         this.muoviPedina(mossa);
+
+		this.mossaPrecedente = mossa;
 
 		System.out.println("dopo\n" + this.toString());
         
