@@ -1,8 +1,11 @@
 package impl;
 
 import java.util.Scanner;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -11,11 +14,11 @@ import java.net.UnknownHostException;
 
 public class Fission {
 	public static enum Colore { White, Black }
-	public static enum Direzioni { N, E, S, O, NE, SE, SO, NO }
+	public static enum Direzioni { N, E, S, W, NE, SE, SW, NW }
 	public static enum TipoMessaggio { Welcome, YourTurn, Continue, OpponentMove, End  }
 	public Configurazione configurazioneCorrente;
 	public AlberoDiRicerca albero;
-	public Colore colorePedine = Colore.White;
+	public Colore colorePedine;
 	public Socket socket;
 	public BufferedWriter invia;
 	public BufferedReader ricevi;
@@ -23,7 +26,6 @@ public class Fission {
 
 	public Fission(String[] args) throws UnknownHostException, IOException {
 		this.connetti(args);
-		this.warmup();
 		this.sc = new Scanner(System.in);
 	}
 
@@ -34,33 +36,27 @@ public class Fission {
 	}
 
 	public void warmup() {
-		this.configurazioneCorrente = new Configurazione();
-		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 1);
-		System.out.println(this.albero.toString());
+		this.configurazioneCorrente = new Configurazione(Colore.White);
+		this.configurazioneCorrente.colorePedine = Colore.White;
+		long start = System.currentTimeMillis();
+		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 250);
+		System.out.println("Creazione albero = " + (System.currentTimeMillis() - start) + " ms");
+		/*
+		try {
+			File f = new File("Test.txt");
+			FileWriter fl = new FileWriter(f);
+			fl.write(this.albero.toString());
+			fl.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
 	}
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
-	public void scegliMossa(Mossa mossa) {
+	public Mossa scegliMossa(Mossa mossa) {
 
-		this.albero.getMossaMigliore(mossa);
+		return this.albero.getMossaMigliore();
 
-		/*
-		 * String posIniziale = "A0";
-		 * Direzioni dir = Direzioni.NE;
-		 * 
-		 * // TODO
-		 * 
-		 * mossa.setPosIniziale(posIniziale);
-		 * mossa.setDir(dir);
-		 
-		
-		System.out.println("scegli mossa");
-		String s = sc.nextLine();
-		System.out.println("mossa scelta = " + s);
-		mossa.setPosIniziale(s.charAt(0) + "" + s.charAt(1));
-		mossa.setDir(s.substring(3));
-		System.out.println("La mossa scelta è " + mossa.posIniziale + "," + mossa.dir);
-		*/
 	}
 
 	public static TipoMessaggio getTipoMessaggio(String messaggio) {
@@ -86,13 +82,13 @@ public class Fission {
 	}
 
 	/************************ utility di test ************************/
-
+/*
 	public void printInfo() {
 		System.out.println("** INFO *******************");
 		System.out.println(this.configurazioneCorrente.toString());
 		this.configurazioneCorrente.printStatoPedine();
 	}
-
+*/
 	/**************************** main *********************************/
 
 	public static void main(String[] args) throws NumberFormatException, UnknownHostException, IOException {
@@ -111,7 +107,7 @@ public class Fission {
 
 				case Welcome : 
 				
-					fission.configurazioneCorrente.assegnaColore(messaggio.substring(8)); 
+					fission.assegnaColore(messaggio.substring(8)); 
 
 					fission.warmup();
 					
@@ -119,11 +115,19 @@ public class Fission {
 
 				case YourTurn : 
 
-					fission.scegliMossa(mossaAlleata);
+					long start = System.currentTimeMillis();
 
-					fission.inviaMossa(mossaAlleata);
+					Mossa mossa = fission.scegliMossa(mossaAlleata);
 
-					fission.configurazioneCorrente.muoviPedina(mossaAlleata);
+					System.out.println("Scelta mossa = " + (System.currentTimeMillis() - start) + " ms");
+
+					fission.inviaMossa(mossa);
+
+					start = System.currentTimeMillis();
+
+					fission.albero = fission.albero.eseguiMossa(mossa);
+
+					System.out.println("Aggiornamneto albero = " + (System.currentTimeMillis() - start) + " ms");
 					
 					break;
 				
@@ -131,7 +135,11 @@ public class Fission {
 
 					mossaAvversaria.setMossa(messaggio);
 
-					fission.configurazioneCorrente.muoviPedina(mossaAvversaria);
+					start = System.currentTimeMillis();
+
+					fission.albero = fission.albero.eseguiMossa(mossaAvversaria);
+
+					System.out.println("Aggiornamneto albero = " + (System.currentTimeMillis() - start) + " ms");					
 
 					break;
 
@@ -145,9 +153,15 @@ public class Fission {
 
 			}
 
-			fission.printInfo();
+			//fission.printInfo();
 
 		}
+
+	}
+
+	private void assegnaColore(String colore) {
+
+		this.colorePedine = Colore.valueOf(colore);
 
 	}
 

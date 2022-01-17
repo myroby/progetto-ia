@@ -30,7 +30,19 @@ public class Cella {
 	}
 
 	public List<Mossa> getMossePossibili() {
-		return getDirezioniPossibili().stream().map(dir -> 
+		return getDirezioniPossibili().stream().filter(dir -> {
+			switch (dir) {
+				case N	: return !configurazione.scacchiera[riga - 1][colonna].isGiocatorePresente();
+				case S	: return !configurazione.scacchiera[riga + 1][colonna].isGiocatorePresente();
+				case E	: return !configurazione.scacchiera[riga][colonna + 1].isGiocatorePresente();
+				case W	: return !configurazione.scacchiera[riga][colonna - 1].isGiocatorePresente();
+				case NE	: return !configurazione.scacchiera[riga - 1][colonna + 1].isGiocatorePresente();
+				case NW : return !configurazione.scacchiera[riga - 1][colonna - 1].isGiocatorePresente();
+				case SE	: return !configurazione.scacchiera[riga + 1][colonna + 1].isGiocatorePresente();
+				case SW	: return !configurazione.scacchiera[riga + 1][colonna - 1].isGiocatorePresente();
+				default	: return false;
+			}
+		}).map(dir -> 
 			new Mossa(riga, colonna + 1, dir, configurazione.colorePedine == pedina)
 		).collect(Collectors.toList());
 	}
@@ -46,6 +58,10 @@ public class Cella {
 	// ritorna le direzioni adiacenti della cella.
 	public List<Direzioni> getDirezioniAdiacenti() {
 		
+		if (riga < 0 || riga > Configurazione.NUM_RIGHE - 1 ||
+			colonna < 0 || colonna > Configurazione.NUM_COLONNE - 1 ||
+				!configurazione.scacchiera[riga][colonna].isGiocatorePresente()) return new ArrayList<Direzioni>();
+
 		// ret contiene tutte le direzioni
 		List<Direzioni> ret = new ArrayList<Direzioni>(Arrays.asList(Direzioni.values()));
 
@@ -53,17 +69,17 @@ public class Cella {
 		if (riga == 0) {
 			ret.remove(Direzioni.N);
 			ret.remove(Direzioni.NE);
-			ret.remove(Direzioni.NO);
+			ret.remove(Direzioni.NW);
 		} else if (riga == Configurazione.NUM_RIGHE - 1) {
 			ret.remove(Direzioni.S);
 			ret.remove(Direzioni.SE);
-			ret.remove(Direzioni.SO);
+			ret.remove(Direzioni.SW);
 		}
 
 		if (colonna == 0) {
-			ret.remove(Direzioni.O);
-			ret.remove(Direzioni.NO);
-			ret.remove(Direzioni.SO);
+			ret.remove(Direzioni.W);
+			ret.remove(Direzioni.NW);
+			ret.remove(Direzioni.SW);
 		} else if (colonna == Configurazione.NUM_COLONNE - 1) {
 			ret.remove(Direzioni.E);
 			ret.remove(Direzioni.NE);
@@ -77,12 +93,12 @@ public class Cella {
         switch (direzione) {
             case N	: return new Tupla(riga - 1, colonna);
             case S	: return new Tupla(riga + 1, colonna);
-            case E	: return new Tupla(riga, colonna - 1);
-            case O	: return new Tupla(riga, colonna + 1);
+            case E	: return new Tupla(riga, colonna + 1);
+            case W	: return new Tupla(riga, colonna - 1);
             case NE	: return new Tupla(riga - 1, colonna + 1);
-            case NO : return new Tupla(riga - 1, colonna - 1);
+            case NW : return new Tupla(riga - 1, colonna - 1);
             case SE	: return new Tupla(riga + 1, colonna + 1);
-            case SO	: return new Tupla(riga + 1, colonna - 1);
+            case SW	: return new Tupla(riga + 1, colonna - 1);
             default	: return null;
         }
     }

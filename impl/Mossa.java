@@ -10,7 +10,7 @@ public class Mossa {
 
     public boolean alleata;
 
-    public int index;
+    public int index; // pedineAvversarieUccise - pedineAlleate
 
     public Mossa(boolean alleata) {
         super();
@@ -33,11 +33,6 @@ public class Mossa {
         super();
         this.posIniziale = posIniziale;
         this.dir = Direzioni.valueOf(dir);
-    }
-
-    public void clear() {
-        this.dir = null;
-        this.posIniziale = null;
     }
 
     public String toMessage() {
@@ -63,8 +58,9 @@ public class Mossa {
         if (x == null) return false;
         if (!(x instanceof Mossa)) return false;
         Mossa m = (Mossa) x;
+        if (m.posIniziale == null || m.dir == null) return false;
         return m.posIniziale.equals(this.posIniziale) &&
-                m.dir.equals(this.dir) && m.alleata == this.alleata;
+                m.dir.equals(this.dir);// && m.alleata == this.alleata;
     }
 
     /****************** Setters & Getters ******************/
