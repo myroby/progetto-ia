@@ -4,82 +4,77 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import impl.AlberoDiRicerca.Nodo;
 import impl.Fission.Colore;
 import impl.Fission.Direzioni;
 
 public class Configurazione {
 
-    public static final int NUM_RIGHE = 8, NUM_COLONNE = 8, NUM_PEDINE = 12;
+	public static final int NUM_RIGHE = 8, NUM_COLONNE = 8, NUM_PEDINE = 12;
 
 	public static final char[] RIGHE = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
 
-    public final Cella[][] scacchiera = new Cella[NUM_RIGHE][NUM_COLONNE]; 
+	public final Cella[][] scacchiera = new Cella[NUM_RIGHE][NUM_COLONNE];
 
-    public final List<Cella> pedineBianche = new ArrayList<Cella>(NUM_PEDINE);
-    
+	public final List<Cella> pedineBianche = new ArrayList<Cella>(NUM_PEDINE);
+
 	public final List<Cella> pedineNere = new ArrayList<Cella>(NUM_PEDINE);
 
-    public Colore colorePedine;
+	public Colore colorePedine;
 
 	public Mossa mossaMiglioreAlleata;
 
-	public Mossa mossaPrecedente; // la mossa che ha portato parent a diventare this
+	public Mossa mossaPrecedente;
 
-    public Configurazione(Colore colorePedine) {
+	public Configurazione(Colore colorePedine) {
 
-        this.inizializzaScacchiera();
+		this.inizializzaScacchiera();
 
-        
-    }
+	}
 
-    public Configurazione(Configurazione parent, Mossa mossa, Colore colorePedine) {
+	public Configurazione(Configurazione parent, Mossa mossa, Colore colorePedine) {
 
-		//System.out.println("PRIMA " + pedineNere.size());
-
-        this.copiaConfigurazione(parent, colorePedine);
-
-		//System.out.println("DOPO " + pedineNere.size());
-
-		//System.out.println("prima\n" + this.toString());
-
-		//System.out.println("la mossa è stata\n" + mossa.toMessage());
+		this.copiaConfigurazione(parent, colorePedine);
 
 		this.mossaPrecedente = new Mossa(mossa.posIniziale, mossa.dir, mossa.alleata);
 
-        this.muoviPedina(mossa, colorePedine);
-		
-		//System.out.println("dopo\n" + this.toString());
-        
-    }
+		this.muoviPedina(mossa, colorePedine);
 
-    public void copiaConfigurazione(Configurazione parent, Colore colorePedine) {
+	}
+
+	public void copiaConfigurazione(Configurazione parent, Colore colorePedine) {
+
+		this.pedineBianche.clear(); this.pedineNere.clear();
 
 		this.colorePedine = (parent.colorePedine == Colore.White) ? Colore.Black : Colore.White;
 
-        for (int i = 0; i < NUM_RIGHE; i++) {
+		for (int i = 0; i < NUM_RIGHE; i++) {
 
 			for (int j = 0; j < NUM_COLONNE; j++) {
 
 				if (parent.scacchiera[i][j].pedina != null) {
-					this.scacchiera[i][j] = new Cella(this,i,j);
-					this.scacchiera[i][j].pedina = (parent.scacchiera[i][j].pedina == Colore.White) ? Colore.White : Colore.Black;
-					((parent.scacchiera[i][j].pedina == Colore.White) ? this.pedineBianche : this.pedineNere).add(this.scacchiera[i][j]);
+					this.scacchiera[i][j] = new Cella(this, i, j);
+					this.scacchiera[i][j].pedina = (parent.scacchiera[i][j].pedina == Colore.White) ? Colore.White
+							: Colore.Black;
+					((parent.scacchiera[i][j].pedina == Colore.White) ? this.pedineBianche : this.pedineNere)
+							.add(this.scacchiera[i][j]);
 				} else {
-					this.scacchiera[i][j] = new Cella(this,i,j);
+					this.scacchiera[i][j] = new Cella(this, i, j);
 					this.scacchiera[i][j].pedina = null;
 				}
 
 			}
-        }
+		}
 
-		
+	}
 
-    }
-
-    private void inizializzaScacchiera() {
+	private void inizializzaScacchiera() {
 
 		for (int i = 0; i < NUM_RIGHE; i++)
 			for (int j = 0; j < NUM_COLONNE; j++)
@@ -107,18 +102,17 @@ public class Configurazione {
 
 	}
 
-    public boolean isCellaLibera(Tupla pos) {
-		if (pos.x < 0 || pos.y < 0) return false;
-		if (pos.x >= 8 || pos.y >= 8) return false;
+	public boolean isCellaLibera(Tupla pos) {
+		if (pos.x < 0 || pos.y < 0)
+			return false;
+		if (pos.x >= 8 || pos.y >= 8)
+			return false;
 		return !scacchiera[pos.x][pos.y].isGiocatorePresente();
 	}
 
+	public void muoviPedina(Mossa mossa, Colore colorePedina) {
 
-
-
-    public void muoviPedina(Mossa mossa, Colore colorePedina) {
-
-        Function<Tupla, Tupla> operation = muoviPedinaHelper(mossa.dir);
+		Function<Tupla, Tupla> operation = muoviPedinaHelper(mossa.dir);
 
 		Tupla posCorrente = mossa.posInizialeToTupla(), posSuccessiva;
 
@@ -143,69 +137,97 @@ public class Configurazione {
 		// se la pedina impatterà un'altra pedina andranno rimosse sia la pedina da
 		// spostare sia le pedine adiacenti
 		if (impattoConPedina) {
-			//System.out.println("impatto con pedina");
+			// System.out.println("impatto con pedina");
 			rimuoviPedinaSingola(posIniziale);
 			rimuoviPedineAdiacenti(posCorrente);
 
 			// in questo caso la pedina impatterà il bordo della scacchiera;
 			// nessuna pedina verrà rimossa ma la sua posizione dovrà essere aggiornata.
 		} else {
-			//System.out.println("sposta con pedina");
+			// System.out.println("sposta con pedina");
 			spostaPedina(posIniziale, posCorrente, colorePedina);
 		}
 
 	}
 
-	public Mossa muoviPedinaSimulato(Mossa mossa) {
+	public static Mossa muoviPedinaSimulato(Configurazione conf, Mossa mossa, boolean isMassimizzatore) {
 
-        Function<Tupla, Tupla> operation = muoviPedinaHelper(mossa.dir);
+		Function<Tupla, Tupla> operation = muoviPedinaHelper(mossa.dir);
 
-        Tupla posCorrente = mossa.posInizialeToTupla(), posSuccessiva;
+		Tupla posCorrente = mossa.posInizialeToTupla(), posSuccessiva;
 
-        boolean bordoRaggiunto = false, impattoConPedina = false;
+		boolean bordoRaggiunto = false, impattoConPedina = false;
 
-        // muove la pedina fino a quando non raggiunge il bordo della scacchiera o un
-        // altra pedina
-        while (true) {
-            posCorrente = operation.apply(posCorrente);
-            posSuccessiva = operation.apply(posCorrente);
-            bordoRaggiunto = posSuccessiva.x == -1 || posSuccessiva.y == -1 || posSuccessiva.x >= NUM_RIGHE || posSuccessiva.y >= NUM_COLONNE;
-            if (bordoRaggiunto)
-                break;
-            impattoConPedina = scacchiera[posSuccessiva.x][posSuccessiva.y].isGiocatorePresente();
-            if (impattoConPedina)
-                break;
-        }
+		// muove la pedina fino a quando non raggiunge il bordo della scacchiera o un
+		// altra pedina
+		while (true) {
+			posCorrente = operation.apply(posCorrente);
+			posSuccessiva = operation.apply(posCorrente);
+			bordoRaggiunto = posSuccessiva.x == -1 || posSuccessiva.y == -1 || posSuccessiva.x >= NUM_RIGHE
+					|| posSuccessiva.y >= NUM_COLONNE;
+			if (bordoRaggiunto)
+				break;
+			impattoConPedina = conf.scacchiera[posSuccessiva.x][posSuccessiva.y].isGiocatorePresente();
+			if (impattoConPedina)
+				break;
+		}
 
-
-		mossa.index = (impattoConPedina) ? numPedineEliminate(posCorrente) - 1 : 0;
-
-		//System.out.println("INDICE = " + mossa.index);
+		mossa.index = (impattoConPedina) ? numPedineEliminate(conf, posCorrente, isMassimizzatore) : 0;
 
 		return mossa;
 
-    }
+	}
 
-    private int numPedineEliminate(Tupla posCorrente) {
-        int c = 0;
-        for (int h = posCorrente.x - 1; h <= posCorrente.x + 1; h++) {
-            for (int k = posCorrente.y - 1; k <= posCorrente.y + 1; k++) {
-                if (h >= 0 && h < NUM_RIGHE && k >= 0 && k < NUM_COLONNE) {
-                    if (scacchiera[h][k].isAlleata())
-                        c--;
-                    else if (!scacchiera[h][k].isAlleata())
-                        c++;
-                }
-            }
-        }
-        return c;
-    }
+	private static float numPedineEliminate(Configurazione conf, Tupla posCorrente, boolean isMassimizzatore) {
+		int alleateUccise = 0, nemicheUccise = 0;
+		for (int h = posCorrente.x - 1; h <= posCorrente.x + 1; h++) {
+			for (int k = posCorrente.y - 1; k <= posCorrente.y + 1; k++) {
+				if (h >= 0 && h < NUM_RIGHE && k >= 0 && k < NUM_COLONNE) {
+					if (conf.scacchiera[h][k].isGiocatorePresente() && conf.scacchiera[h][k].isAlleata()) {
+						alleateUccise++;
+					}
+					else if (conf.scacchiera[h][k].isGiocatorePresente() && !conf.scacchiera[h][k].isAlleata()) {
+						nemicheUccise++;
+					}
+				}
+			}
+		}
 
-    // ritorna una funzione che incrementa una o più coordinate; es:
+		// se il numero delle pedine nemiche uccise è pari a quelle alleate non deve essere 0
+		// perchè se a noi rimane una pedina allora perdiamo il gioco
+
+		List<Cella> pedineAlleate, pedineAvversarie;
+
+		int differenza = nemicheUccise - alleateUccise;
+
+		if (isMassimizzatore) { 
+			pedineAlleate = conf.pedineBianche; pedineAvversarie = conf.pedineNere; 
+		} else {
+			pedineAlleate = conf.pedineNere; pedineAvversarie = conf.pedineBianche; 
+		}
+
+		if (differenza == 0) {
+
+			//in questo caso la nostra unica pedina si sta suicidando
+			if (pedineAlleate.size() == alleateUccise) return - Float.MAX_VALUE;
+
+			//in questo caso stiamo uccidendo le ultime pedine rimaste all'aversario
+			if (pedineAvversarie.size() == nemicheUccise) return Float.MAX_VALUE;
+
+			// in questo modo uccidere 3 pedine e perderne 3 risulta essere una mossa non conveniente
+			return - 0.1f;
+
+		}
+
+		return differenza;
+		
+	}
+
+	// ritorna una funzione che incrementa una o più coordinate; es:
 	// se la direzione è NE allora ritorna una funzione f. applicando f su una
 	// tupla ritorna un'altra tupla con le coordinate aggiornate:
 	// f(5,8) -> (4,9)
-	private Function<Tupla, Tupla> muoviPedinaHelper(Direzioni dir) {
+	private static Function<Tupla, Tupla> muoviPedinaHelper(Direzioni dir) {
 		Function<Tupla, Tupla> func = null;
 		switch (dir) {
 			case N:
@@ -244,7 +266,7 @@ public class Configurazione {
 		return func;
 	}
 
-    // rimuove la pedina in posizione (x,y) dalla scacchiera e dalla relativa lista
+	// rimuove la pedina in posizione (x,y) dalla scacchiera e dalla relativa lista
 	private void rimuoviPedinaSingola(int x, int y) {
 		if (x >= 0 && x < NUM_RIGHE && y >= 0 && y < NUM_COLONNE) {
 			((scacchiera[x][y].pedina == Colore.White) ? pedineBianche : pedineNere).remove(scacchiera[x][y]);
@@ -256,7 +278,7 @@ public class Configurazione {
 		rimuoviPedinaSingola(tupla.x, tupla.y);
 	}
 
-    // rimuove le pedine adiacenti dalla scacchiera servendosi di
+	// rimuove le pedine adiacenti dalla scacchiera servendosi di
 	// rimuoviPedinaSingola()
 	private void rimuoviPedineAdiacenti(Tupla posCorrente) {
 		for (int h = posCorrente.x - 1; h <= posCorrente.x + 1; h++) {
@@ -270,24 +292,14 @@ public class Configurazione {
 
 	// sposta una pedina senza rimuovere alcuna pedina
 	private void spostaPedina(Tupla start, Tupla end, Colore colorePedina) {
-		Cella pedinaDaSpostare = scacchiera[start.x][start.y];
 		List<Cella> temp = (scacchiera[start.x][start.y].pedina == Colore.White) ? pedineBianche : pedineNere;
 		temp.remove(scacchiera[start.x][start.y]);
 		temp.add(scacchiera[end.x][end.y]);
 		scacchiera[end.x][end.y].pedina = scacchiera[start.x][start.y].pedina;
 		scacchiera[start.x][start.y].removePedina();
 	}
-/*
-    public void printStatoPedine() {
-		System.out.println("Le pedine alleate sono: " + pedineAlleate.size());
-		this.pedineAlleate.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
-		System.out.println("\n");
-		System.out.println("Le pedine avversarie sono: " + pedineAvversarie.size());
-		this.pedineAvversarie.stream().forEach(pedina -> System.out.print(pedina.getCoordinate()));
-		System.out.println("\n");
-	}
-*/
-    @Override
+
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(NUM_COLONNE * NUM_RIGHE * 3);
 		sb.append("\n   1  2  3  4  5  6  7  8\n");
@@ -302,42 +314,81 @@ public class Configurazione {
 		return sb.toString();
 	}
 
-    public List<Mossa> getMossePossibili(boolean isMassimizzatore) {/*
-        return ((isMassimizzatore) ? pedineAlleate : pedineAvversarie)
-            .stream()
-            .map(pedina -> pedina.getMossePossibili())
-            .collect(ArrayList::new, List::addAll, List::addAll);
-*/
-		List<Cella> temp = new ArrayList<>();
-		temp.addAll(pedineBianche);
-		temp.addAll(pedineNere);
-		return temp.stream()
-		.map(pedina -> pedina.getMossePossibili())
-		.collect(ArrayList::new, List::addAll, List::addAll);
-    }
-
-	public Mossa getMossaMigliore(boolean isMassimizzatore) {
-
-		Comparator<Mossa> comparator = new Comparator<Mossa>() {
-			@Override
-			public int compare(Mossa m1, Mossa m2) {
-				return Integer.compare(m1.index, m2.index);
+	public static String print(Cella[][] scacchiera) {
+		StringBuilder sb = new StringBuilder(NUM_COLONNE * NUM_RIGHE * 3);
+		sb.append("\n   1  2  3  4  5  6  7  8\n");
+		for (int i = 0; i < NUM_RIGHE; i++) {
+			sb.append(RIGHE[i]);
+			for (int j = 0; j < NUM_COLONNE; j++) {
+				sb.append("  " + scacchiera[i][j].print(true));
 			}
-		};
+			sb.append("\n");
+		}
+		sb.append("\n");
+		return sb.toString();
+	}
 
-		//System.out.println(pedineNere.size());
+	public List<Mossa> getMossePossibili(boolean isMassimizzatore) {
 
-		Mossa mossaMigliore = ((isMassimizzatore) ? pedineBianche : pedineNere)
-			.stream()
-			.map(pedina -> pedina.getMossePossibili())
-			.flatMap(Collection::stream)
-			.map(mossa -> mossa = muoviPedinaSimulato(mossa))
-			.max(comparator)
-			.get();
+		List<Cella> union = (isMassimizzatore) ? pedineBianche : pedineNere;
 
-		mossaMiglioreAlleata = new Mossa(mossaMigliore.posIniziale, mossaMigliore.dir, mossaMigliore.alleata);
+		return union.stream().map(pedina -> pedina.getMossePossibili()).collect(ArrayList::new, List::addAll,List::addAll);
 
-        return this.mossaMiglioreAlleata;
-    }
-    
+	}
+
+	public List<Mossa> getMossePossibili() {
+
+		List<Cella> union = Stream.of(pedineBianche, pedineNere).flatMap(Collection::stream)
+				.collect(Collectors.toList());
+
+		return union.stream().map(pedina -> pedina.getMossePossibili()).collect(ArrayList::new, List::addAll,
+				List::addAll);
+
+	}
+
+	public static Mossa getMossaMigliore(Configurazione conf, boolean isMassimizzatore, List<Nodo> figli) {
+
+		Optional<Mossa> mossaMigliore = ((isMassimizzatore) ? conf.pedineBianche : conf.pedineNere)
+				.stream()
+				.map(pedina -> pedina.getMossePossibili())
+				.flatMap(Collection::stream)
+				.map(mossa -> mossa = Configurazione.muoviPedinaSimulato(conf, mossa, isMassimizzatore))
+				.filter(mossa -> !Configurazione.isMossaDannosa(mossa, figli, isMassimizzatore))
+				.max(new Mossa()::compare);
+
+		if (mossaMigliore.isPresent())
+			return mossaMigliore.get();
+
+		return null;
+	}
+
+	private static boolean isMossaDannosa(Mossa mossa, List<Nodo> figli, boolean isMassimizzatore) {
+
+		if (figli == null) return false;
+
+		Nodo figlio = getFiglioByMossa(mossa, figli);
+
+		if (figlio == null) return false;
+
+		Mossa potenzialeMossaAvversario = getMossaMigliore(figlio.conf, isMassimizzatore, null);
+		
+		if (potenzialeMossaAvversario != null && potenzialeMossaAvversario.index > 0) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static Nodo getFiglioByMossa(Mossa mossa, List<Nodo> figli) {
+		// figli.stream().forEach(f -> System.out.println(f.conf.toString()));
+		Nodo figlio = null;
+		for (Nodo f : figli) {
+			if (f.conf.mossaPrecedente.equals(mossa)) {
+				figlio = f;
+				break;
+			}
+		}
+		return figlio;
+	}
+
 }

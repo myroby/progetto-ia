@@ -2,8 +2,12 @@ package impl;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.swing.text.StyledEditorKit;
 
 import impl.Fission.Colore;
 
@@ -11,11 +15,7 @@ import java.util.Deque;
 
 public class AlberoDiRicerca {
 
-    public boolean isMassimizzatore;
-
-    public enum Tipo {
-        Max, Min
-    }
+    public static final float TIME_LIMIT_CREAZIONE = 0.2f /* 1.2f */, TIME_LIMIT_INCREMENTO = 0.5f;
 
     static class Nodo implements Comparable<Nodo> {
 
@@ -41,7 +41,7 @@ public class AlberoDiRicerca {
 
             this.tipo = tipo;
 
-            this.figli = new ArrayList<Nodo>(length);
+            this.figli = new ArrayList<Nodo>(100);
 
             this.iterazione = iterazione;
 
@@ -56,39 +56,30 @@ public class AlberoDiRicerca {
             return this.tipo == Tipo.Min;
         }
 
-        // TODO !!!!!!!!!!! CONTROLLARE
         public boolean isFoglia() {
             return figli.isEmpty();
         }
 
-        // TODO !!!!!!!!!!!!!CONTROLLARE
-        public List<Nodo> getAntenatiMinimizzatori() {
-            List<Nodo> antenati = new ArrayList<Nodo>(100);
-            getAntenatiMinimizzatori(this, antenati);
+        public List<Nodo> getAntenatiMinimizzatori(int profondita) {
+            List<Nodo> antenati = new ArrayList<Nodo>(profondita / 2);
+            Nodo parent = this.parent;
+            while (parent != null) {
+                if (parent.isMinimizzatore())
+                    antenati.add(parent);
+                parent = parent.parent;
+            }
             return antenati;
         }
 
-        private void getAntenatiMinimizzatori(Nodo nodo, List<Nodo> antenati) {
-            if (nodo.parent == null)
-                return;
-            if (nodo.parent.isMinimizzatore())
-                antenati.add(nodo.parent);
-            getAntenatiMassimizzatori(nodo.parent, antenati);
-        }
-
-        // TODO !!!!!!!!!!!!!!CONTROLLARE
-        public List<Nodo> getAntenatiMassimizzatori() {
-            List<Nodo> antenati = new ArrayList<Nodo>(100);
-            getAntenatiMassimizzatori(this, antenati);
+        public List<Nodo> getAntenatiMassimizzatori(int profondita) {
+            List<Nodo> antenati = new ArrayList<Nodo>(profondita / 2);
+            Nodo parent = this.parent;
+            while (parent != null) {
+                if (!parent.isMinimizzatore())
+                    antenati.add(parent);
+                parent = parent.parent;
+            }
             return antenati;
-        }
-
-        private void getAntenatiMassimizzatori(Nodo nodo, List<Nodo> antenati) {
-            if (nodo.parent == null)
-                return;
-            if (!nodo.parent.isMinimizzatore())
-                antenati.add(nodo.parent);
-            getAntenatiMassimizzatori(nodo.parent, antenati);
         }
 
         @Override
@@ -101,11 +92,14 @@ public class AlberoDiRicerca {
             if (!this.figli.isEmpty())
                 return this.figli;
 
-            //TODO
-            this.conf.getMossePossibili(this.tipo == Tipo.Max).stream().forEach(mossa -> {
-
-                this.figli.add(new Nodo(new Configurazione(this.conf, mossa, (this.conf.colorePedine == Colore.White) ? 
-                    Colore.Black : Colore.White), this,
+            // TODO
+            this.conf.getMossePossibili().stream().forEach(mossa -> {
+                int[] pos = Mossa.posInizialeToInt(mossa);
+                if (this.conf.scacchiera[pos[0]][pos[1]].isAlleata()) mossa.alleata = true; else mossa.alleata = false;
+                this.figli.add(new Nodo(
+                        new Configurazione(this.conf, mossa,
+                                (this.conf.colorePedine == Colore.White) ? Colore.Black : Colore.White),
+                        this,
                         (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50, this.iterazione));
 
             });
@@ -114,15 +108,57 @@ public class AlberoDiRicerca {
 
         }
 
+        public List<Nodo> generaFigli() {
+
+            List<Nodo> temp = new ArrayList<>();
+
+            // TODO
+            this.conf.getMossePossibili().stream().forEach(mossa -> {
+                int[] pos = Mossa.posInizialeToInt(mossa);
+                if (this.conf.scacchiera[pos[0]][pos[1]].isAlleata()) mossa.alleata = true; else mossa.alleata = false;
+                temp.add(new Nodo(
+                        new Configurazione(this.conf, mossa,
+                                (this.conf.colorePedine == Colore.White) ? Colore.Black : Colore.White),
+                        this,
+                        (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50, this.iterazione));
+
+            });
+
+            return temp;
+
+        }
+
+        public List<Nodo> generaFigliAlleati() {
+
+            List<Nodo> temp = new ArrayList<>();
+
+            // TODO
+            this.conf.getMossePossibili(this.tipo == Tipo.Max).stream().forEach(mossa -> {
+                int[] pos = Mossa.posInizialeToInt(mossa);
+                if (this.conf.scacchiera[pos[0]][pos[1]].isAlleata()) mossa.alleata = true; else mossa.alleata = false;
+                temp.add(new Nodo(
+                        new Configurazione(this.conf, mossa,
+                                (this.conf.colorePedine == Colore.White) ? Colore.Black : Colore.White),
+                        this,
+                        (this.tipo == Tipo.Max) ? Tipo.Min : Tipo.Max, 50, this.iterazione));
+
+            });
+
+            return temp;
+
+        }
+
     }
 
     public Nodo root;
+
+    public boolean isMassimizzatore;
 
     public int profondita;
 
     public int maxProfondita;
 
-    public Deque<Nodo> list = new ArrayDeque<Nodo>(50); // 50 ?????????????????????
+    public Deque<Nodo> list = new ArrayDeque<Nodo>(60000);
 
     public List<Nodo> foglieCorr = new ArrayList<Nodo>();
 
@@ -139,7 +175,7 @@ public class AlberoDiRicerca {
 
                 alpha = Float.NEGATIVE_INFINITY;
 
-            // se alpha esiste (esiste davvero ?????)
+                // se alpha esiste (esiste davvero ?????)
             } else {
 
                 Optional<Nodo> maxFratelliDiP = fratelliDiP.stream().max((a, b) -> a.compareTo(b));
@@ -214,7 +250,15 @@ public class AlberoDiRicerca {
 
     }
 
+    public enum Tipo {
+        Max, Min
+    }
+
     public AlberoDiRicerca eseguiMossa(Mossa mossa) {
+
+        long start = System.currentTimeMillis();
+
+        boolean stop = false;
 
         this.iterazione++;
 
@@ -231,43 +275,49 @@ public class AlberoDiRicerca {
             }
 
         }
-/*
-        List<Nodo> foglieF = new ArrayList<Nodo>();
-
-        for (Nodo foglia : this.foglieCorr) {
-
-            foglieF.addAll(foglia.getFigli());
-
-        }
-
-        foglieCorr = foglieF;
-*/
+        /*
+         * List<Nodo> foglieF = new ArrayList<Nodo>();
+         * 
+         * for (Nodo foglia : this.foglieCorr) {
+         * 
+         * foglieF.addAll(foglia.getFigli());
+         * 
+         * }
+         * 
+         * foglieCorr = foglieF;
+         */
         this.list.clear();
 
-        //MODIFICA ETICHETTE
+        // MODIFICA ETICHETTE
 
         profondita = 0;
 
         // step n° 1
         this.list.push(this.root);
 
-        while ((!this.root.isEtichettato && this.root.iterazione != this.iterazione) || this.root.etichetta != Float.POSITIVE_INFINITY || this.root.etichetta != Float.NEGATIVE_INFINITY) {
+        while ((!this.root.isEtichettato && this.root.iterazione != this.iterazione)
+                || this.root.etichetta != Float.POSITIVE_INFINITY || this.root.etichetta != Float.NEGATIVE_INFINITY) {
 
-            if (this.list.isEmpty()) break;
+            if (System.currentTimeMillis() - start > TIME_LIMIT_INCREMENTO * 1000)
+                stop = true;
 
-            //System.out.println("WHILE");
+            if (this.list.isEmpty())
+                break;
+
+            // System.out.println("WHILE");
 
             Nodo x = this.list.pop(), p = x.parent;
 
-            x.getFigli();
+            if (!stop)
+                x.getFigli();
 
             // serve per sapere se entrare nello step n° 4 oppure no
             boolean hoRimossoP = false; // VA QUI ???????
 
-            // step n° 3    DA CONTROLLARE
+            // step n° 3 DA CONTROLLARE
             if (x.isEtichettato && x.iterazione == this.iterazione && p != null) {
 
-                //System.out.println("STEP 3");
+                // System.out.println("STEP 3");
 
                 List<Nodo> fratelliDiP, antenatiDiP;
 
@@ -280,38 +330,38 @@ public class AlberoDiRicerca {
 
                     if (p.isMinimizzatore()) {
 
-                        antenatiDiP = p.getAntenatiMinimizzatori();
-    
+                        antenatiDiP = p.getAntenatiMinimizzatori(this.profondita);
+
                         alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
-    
+
                         if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
                                                     // ESISTONO ??????
-    
+
                             hoRimossoP = true;
-    
+
                             this.list.remove(p);
-    
+
                             this.list.removeAll(p.figli);
-    
+
                         }
-    
+
                     } else {
-    
-                        antenatiDiP = p.getAntenatiMassimizzatori();
-    
+
+                        antenatiDiP = p.getAntenatiMassimizzatori(this.profondita);
+
                         alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
-    
+
                         if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
                                                     // ESISTONO ??????
-    
+
                             hoRimossoP = true;
-    
+
                             this.list.remove(p);
-    
+
                             this.list.removeAll(p.figli);
-    
+
                         }
-    
+
                     }
 
                 }
@@ -319,9 +369,10 @@ public class AlberoDiRicerca {
             } // end step n° 3
 
             // step n° 4
-            if ((!x.isEtichettato || (x.isEtichettato && x.iterazione != this.iterazione)) && x.parent != null && !hoRimossoP) {
+            if ((!x.isEtichettato || (x.isEtichettato && x.iterazione != this.iterazione)) && x.parent != null
+                    && !hoRimossoP) {
 
-                //System.out.println("STEP 4 " + profondita);
+                // System.out.println("STEP 4 " + profondita);
 
                 float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta)
                         : Math.max(p.etichetta, x.etichetta);
@@ -333,22 +384,24 @@ public class AlberoDiRicerca {
             }
 
             // step n° 5 (BISOGNA CONTROLLARE)
-            if ((!x.isEtichettato || (x.isEtichettato && x.iterazione != this.iterazione)) && (x.isFoglia() || profondita >= maxProfondita)) {
+            if ((!x.isEtichettato || (x.isEtichettato && x.iterazione != this.iterazione))
+                    && (x.isFoglia() || profondita >= maxProfondita)) {
 
-               // System.out.println("STEP 5");
+                // System.out.println("STEP 5");
 
-                x.setEtichetta(euristica(x.conf));
+                x.setEtichetta(euristica(x, x.conf));
 
                 x.iterazione = this.iterazione;
-                
+
                 this.list.push(x);
-                
-            // step n° 6
+
+                // step n° 6
             } else {
 
-                if (x.isEtichettato && x.iterazione == this.iterazione) continue;
+                if (x.isEtichettato && x.iterazione == this.iterazione)
+                    continue;
 
-               // System.out.println("STEP 6");
+                // System.out.println("STEP 6");
 
                 x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
 
@@ -364,9 +417,6 @@ public class AlberoDiRicerca {
 
         } // end while
 
-
-
-
         return this;
 
     }
@@ -375,7 +425,9 @@ public class AlberoDiRicerca {
     // questo costruttore verrà eseguito solo una volta
     public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
 
-        System.out.println("SONO MASSIMIZZATORE = " + isMassimizzatore);
+        long start = System.currentTimeMillis();
+
+        boolean stop = false;
 
         this.isMassimizzatore = isMassimizzatore;
 
@@ -386,28 +438,34 @@ public class AlberoDiRicerca {
         // step n° 1
         this.list.push(this.root);
 
-        //System.out.println("STEP 1");
+        // System.out.println("STEP 1");
 
         // step n° 2
-        while (!this.root.isEtichettato || this.root.etichetta != Float.POSITIVE_INFINITY || this.root.etichetta != Float.NEGATIVE_INFINITY) {
+        while (!this.root.isEtichettato || this.root.etichetta != Float.POSITIVE_INFINITY
+                || this.root.etichetta != Float.NEGATIVE_INFINITY) {
 
-            if (this.list.isEmpty()) break;
+            if (System.currentTimeMillis() - start > TIME_LIMIT_CREAZIONE * 1000)
+                stop = true;
 
-            //System.out.println("STEP 2");
+            if (this.list.isEmpty())
+                break;
 
-            //System.out.println(this.list.size());
+            // System.out.println("STEP 2");
+
+            // System.out.println(this.list.size());
 
             Nodo x = this.list.pop(), p = x.parent;
 
-            x.getFigli();
+            if (!stop)
+                x.getFigli();
 
             // serve per sapere se entrare nello step n° 4 oppure no
             boolean hoRimossoP = false; // VA QUI ???????
 
-            // step n° 3    DA CONTROLLARE
+            // step n° 3 DA CONTROLLARE
             if (x.isEtichettato && p != null) {
 
-                //System.out.println("STEP 3");
+                // System.out.println("STEP 3");
 
                 List<Nodo> fratelliDiP, antenatiDiP;
 
@@ -420,38 +478,38 @@ public class AlberoDiRicerca {
 
                     if (p.isMinimizzatore()) {
 
-                        antenatiDiP = p.getAntenatiMinimizzatori();
-    
+                        antenatiDiP = p.getAntenatiMinimizzatori(this.profondita);
+
                         alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
-    
+
                         if (x.etichetta <= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
                                                     // ESISTONO ??????
-    
+
                             hoRimossoP = true;
-    
+
                             this.list.remove(p);
-    
+
                             this.list.removeAll(p.figli);
-    
+
                         }
-    
+
                     } else {
-    
-                        antenatiDiP = p.getAntenatiMassimizzatori();
-    
+
+                        antenatiDiP = p.getAntenatiMassimizzatori(this.profondita);
+
                         alpha = calcolaAlpha(p.tipo, fratelliDiP, antenatiDiP);
-    
+
                         if (x.etichetta >= alpha) { // FORSE SI PUO' TOGLIERE NEL CASO IN CUI FRATELLI O ANTENATI NON
                                                     // ESISTONO ??????
-    
+
                             hoRimossoP = true;
-    
+
                             this.list.remove(p);
-    
+
                             this.list.removeAll(p.figli);
-    
+
                         }
-    
+
                     }
 
                 }
@@ -461,7 +519,7 @@ public class AlberoDiRicerca {
             // step n° 4
             if (!x.isEtichettato && x.parent != null && !hoRimossoP) {
 
-                //System.out.println("STEP 4");
+                // System.out.println("STEP 4");
 
                 float valoreEtichettaParent = (p.isMinimizzatore()) ? Math.min(p.etichetta, x.etichetta)
                         : Math.max(p.etichetta, x.etichetta);
@@ -471,20 +529,21 @@ public class AlberoDiRicerca {
             }
 
             // step n° 5 (BISOGNA CONTROLLARE)
-            if (!x.isEtichettato && (x.isFoglia() || profondita >= maxProfondita)) {
+            if (!x.isEtichettato && x.isFoglia()) {
 
-                //System.out.println("STEP 5");
+                // System.out.println("STEP 5");
 
-                x.setEtichetta(euristica(x.conf));
-                
+                x.setEtichetta(euristica(x, x.conf));
+
                 this.list.push(x);
                 foglieCorr.add(x);
                 // step n° 6
             } else {
 
-                if (x.isEtichettato) continue;
+                if (x.isEtichettato)
+                    continue;
 
-                //System.out.println("STEP 6");
+                // System.out.println("STEP 6");
 
                 x.setEtichetta(x.isMinimizzatore() ? Float.POSITIVE_INFINITY : Float.NEGATIVE_INFINITY);
 
@@ -500,42 +559,36 @@ public class AlberoDiRicerca {
 
     }
 
-    public float euristica(Configurazione configurazione) {
+    public float euristica(Nodo n, Configurazione configurazione) {
+
+        List<Nodo> figli = n.generaFigli();
+
         float euristica = 0.0f;
-        // prendo l'attacco migliore del nemico
-        Mossa mossaAvversario = configurazione.getMossaMigliore(!isMassimizzatore);
-        Mossa mossaAlleata = configurazione.getMossaMigliore(isMassimizzatore);
-        int numPedine = configurazione.pedineBianche.size() - configurazione.pedineNere.size();
-        //System.out.println("NUmero perdine " + numPedine);
 
-        if (mossaAlleata == null || (mossaAlleata != null && mossaAlleata.index == 0)) {
+        float mul;
 
-            if (mossaAvversario == null || (mossaAvversario != null && mossaAvversario.index == 0)) {
-                //System.out.println("ALLEATA NULL & AVVERSARIA NULL, euristica = " + euristica);
-                euristica = numPedine / 12.0f;
+        Mossa mossa = null;
 
-            } else {
-                //System.out.println("ALLEATA NULL & AVVERSARIA NOT NULL, euristica = " + euristica);
-                //TODO è negativo?
-                euristica = mossaAvversario.index / 6.0f;
+        if (n.isMinimizzatore()) {
+            mossa = Configurazione.getMossaMigliore(configurazione, false, figli);
+            mul = -1f;
+        } else {
+            Configurazione.getMossaMigliore(configurazione, true, figli);
+            mul = 1f;
+        }
 
-            }
+        if (mossa == null || (mossa != null && mossa.index == 0)) {
+
+            euristica = (configurazione.pedineBianche.size() - configurazione.pedineNere.size()) / 12.0f;
 
         } else {
-
-            if (mossaAvversario == null || (mossaAvversario != null && mossaAvversario.index == 0)) {
-                //System.out.println("ALLEATA NOT NULL & AVVERSARIA NULL, euristica = " + euristica);
-                euristica = mossaAlleata.index / 6.0f;
-
-            } else {
-                //System.out.println("ALLEATA NOT NULL & AVVERSARIA NOT NULL, euristica = " + euristica);
-                euristica = (configurazione.mossaMiglioreAlleata.index - mossaAvversario.index) / 6.0f;
-                
-            }
-
+            
+            euristica = mossa.index / 6.0f * mul;
+            
         }
-        
+
         return euristica;
+
     }
 
     @Override
@@ -547,24 +600,57 @@ public class AlberoDiRicerca {
         temp.push(root);
         indici.add("00");
         int i = 0;
-        while (!temp.isEmpty() )
-            {
-                Nodo nodoN = temp.pop();
-                sb.append(nodoN.conf.toString());
-                sb.append("Etichetta = " + nodoN.etichetta + "\n");
-                sb.append(indici.pop());
-                int j=0;
-                for (Nodo f: nodoN.figli)
-                    {j++; temp.addLast(f); indici.addLast(i+""+j); }
-                i++;
+        while (!temp.isEmpty()) {
+            Nodo nodoN = temp.pop();
+            sb.append(nodoN.conf.toString());
+            sb.append("Etichetta = " + nodoN.etichetta + "\n");
+            sb.append(indici.pop());
+            int j = 0;
+            for (Nodo f : nodoN.figli) {
+                j++;
+                temp.addLast(f);
+                indici.addLast(i + "" + j);
             }
+            i++;
+        }
 
         return sb.toString();
     }
 
-    // TODO deve aggiornare l'albero (la radice)
     public Mossa getMossaMigliore() {
-        return this.root.conf.getMossaMigliore(this.isMassimizzatore);
+        //return Configurazione.getMossaMigliore(this.root.conf, isMassimizzatore, this.root.figli);
+
+        Mossa m = this.root.figli.stream().filter(f -> {
+            int[] pos = Mossa.posInizialeToInt(f.conf.mossaPrecedente);
+            return this.root.conf.scacchiera[pos[0]][pos[1]].isAlleata();
+        }).max(new Comparator<Nodo>() {
+
+            @Override
+            public int compare(Nodo o1, Nodo o2) {
+                return Float.compare(o1.etichetta, o2.etichetta);
+            }
+
+        }).get().conf.mossaPrecedente;
+
+        System.out.println("HO scelto la mossa " + m.toMessage() +  " con index = " + m.index);
+
+        return m;
+
+/*
+        Optional<Nodo> nodoEtichettaMax = this.root.figli.stream().filter(n -> {
+            Mossa mossaPrecedente = n.conf.mossaPrecedente;
+            char c = mossaPrecedente.posIniziale.charAt(0);
+            return true;
+        }).max(new Comparator<Nodo>() {
+
+            @Override
+            public int compare(Nodo o1, Nodo o2) {
+                return Float.compare(o1.etichetta, o2.etichetta);
+            }
+            
+        });
+
+        return nodoEtichettaMax.get().conf.mossaPrecedente;*/
     }
 
 }

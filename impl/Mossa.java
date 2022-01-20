@@ -1,8 +1,10 @@
 package impl;
 
+import java.util.Comparator;
+
 import impl.Fission.Direzioni;
 
-public class Mossa {
+public class Mossa implements Comparator<Mossa> {
 
     public String posIniziale;
 
@@ -10,7 +12,11 @@ public class Mossa {
 
     public boolean alleata;
 
-    public int index; // pedineAvversarieUccise - pedineAlleate
+    public float index; // pedineAvversarieUccise - pedineAlleate
+
+    public Mossa() {
+        super();
+    }
 
     public Mossa(boolean alleata) {
         super();
@@ -33,6 +39,18 @@ public class Mossa {
         super();
         this.posIniziale = posIniziale;
         this.dir = Direzioni.valueOf(dir);
+    }
+
+    public static int[] posInizialeToInt(Mossa m) {
+        char riga = m.posIniziale.charAt(0), colonna = m.posIniziale.charAt(1);
+        if (riga == 'A') return new int[] { 0, Integer.parseInt(colonna + "")-1 };
+        if (riga == 'B') return new int[] { 1, Integer.parseInt(colonna + "")-1 };
+        if (riga == 'C') return new int[] { 2, Integer.parseInt(colonna + "")-1 };
+        if (riga == 'D') return new int[] { 3, Integer.parseInt(colonna + "") -1};
+        if (riga == 'E') return new int[] { 4, Integer.parseInt(colonna + "") -1};
+        if (riga == 'F') return new int[] { 5, Integer.parseInt(colonna + "") -1};
+        if (riga == 'G') return new int[] { 6, Integer.parseInt(colonna + "") -1};
+        return new int[] { 7, Integer.parseInt(colonna + "") -1};
     }
 
     public String toMessage() {
@@ -59,8 +77,7 @@ public class Mossa {
         if (!(x instanceof Mossa)) return false;
         Mossa m = (Mossa) x;
         if (m.posIniziale == null || m.dir == null) return false;
-        return m.posIniziale.equals(this.posIniziale) &&
-                m.dir.equals(this.dir);// && m.alleata == this.alleata;
+        return m.posIniziale.equals(this.posIniziale) && m.dir.equals(this.dir);
     }
 
     /****************** Setters & Getters ******************/
@@ -90,6 +107,11 @@ public class Mossa {
 
     public void setAlleata(boolean alleata) {
         this.alleata = alleata;
+    }
+
+    @Override
+    public int compare(Mossa m1, Mossa m2) {
+        return Float.compare(m1.index, m2.index);
     }
     
 }
