@@ -7,19 +7,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageTypeSpecifier;
 import javax.swing.text.StyledEditorKit;
 
 import impl.Fission.Colore;
+import impl.Fission.Direzioni;
 
 import java.util.Deque;
 
 public class AlberoDiRicerca {
 
-    public static final float TIME_LIMIT_CREAZIONE = 0.2f /* 1.2f */, TIME_LIMIT_INCREMENTO = 0.5f;
+    public static final float TIME_LIMIT_CREAZIONE = 0.1f /* 1.2f */, TIME_LIMIT_INCREMENTO = 0.1f;
 
     static class Nodo implements Comparable<Nodo> {
 
         Configurazione conf;
+
+        Mossa m;
 
         Nodo parent;
 
@@ -425,6 +429,8 @@ public class AlberoDiRicerca {
     // questo costruttore verrà eseguito solo una volta
     public AlberoDiRicerca(Configurazione radice, boolean isMassimizzatore, int maxProfondita) {
 
+        System.out.println((isMassimizzatore) ? "Sono massimizzatore" : "Sono minimizzatore");
+
         long start = System.currentTimeMillis();
 
         boolean stop = false;
@@ -565,27 +571,32 @@ public class AlberoDiRicerca {
 
         float euristica = 0.0f;
 
-        float mul;
+        Mossa mossa = Configurazione.getMossaMigliore(n.conf, !n.isMinimizzatore(), figli, this.isMassimizzatore);
 
-        Mossa mossa = null;
+		//if (n.conf.mossaPrecedente.posIniziale.charAt(0) == 'D' && n.conf.mossaPrecedente.posIniziale.charAt(1) == '2' && n.conf.mossaPrecedente.dir == Direzioni.N) 
+			//cSystem.out.println(n.isMinimizzatore() + " - " +mossa.index + " \n " + mossa.toMessage() + " - " + n.conf.toString());
 
-        if (n.isMinimizzatore()) {
-            mossa = Configurazione.getMossaMigliore(configurazione, false, figli);
-            mul = -1f;
-        } else {
-            Configurazione.getMossaMigliore(configurazione, true, figli);
-            mul = 1f;
+        if (mossa != null && mossa.index != 0) {
+
+            euristica = mossa.index / 6.0f;
+            
+            if (n.isMinimizzatore()) euristica *= -1f;
+
+            return euristica;
+            
         }
 
         if (mossa == null || (mossa != null && mossa.index == 0)) {
 
-            euristica = (configurazione.pedineBianche.size() - configurazione.pedineNere.size()) / 12.0f;
+            if (n.isMinimizzatore()) {
+                euristica = (configurazione.pedineNere.size() - configurazione.pedineBianche.size()) / 12;
+            } else {
+                euristica = (configurazione.pedineBianche.size() - configurazione.pedineNere.size()) / 12;
+            }
 
-        } else {
-            
-            euristica = mossa.index / 6.0f * mul;
-            
         }
+
+        //if (this.isMassimizzatore) return euristica;
 
         return euristica;
 
@@ -603,8 +614,11 @@ public class AlberoDiRicerca {
         while (!temp.isEmpty()) {
             Nodo nodoN = temp.pop();
             sb.append(nodoN.conf.toString());
+            sb.append(nodoN.conf.pedineBianche.stream().map(p -> p.riga + " - " + (p.colonna + 1) + " | ").reduce((s,k) -> s = s + k));
+            sb.append("\n");
+            sb.append(nodoN.conf.pedineNere.stream().map(p -> p.riga + " - " + (p.colonna + 1) + " | ").reduce((s,k) -> s = s + k));
             sb.append("Etichetta = " + nodoN.etichetta + "\n");
-            sb.append(indici.pop());
+            sb.append(indici.pop() + "\n\n\n\n");
             int j = 0;
             for (Nodo f : nodoN.figli) {
                 j++;
@@ -620,19 +634,42 @@ public class AlberoDiRicerca {
     public Mossa getMossaMigliore() {
         //return Configurazione.getMossaMigliore(this.root.conf, isMassimizzatore, this.root.figli);
 
-        Mossa m = this.root.figli.stream().filter(f -> {
-            int[] pos = Mossa.posInizialeToInt(f.conf.mossaPrecedente);
-            return this.root.conf.scacchiera[pos[0]][pos[1]].isAlleata();
-        }).max(new Comparator<Nodo>() {
+        Nodo n = null;
 
-            @Override
-            public int compare(Nodo o1, Nodo o2) {
-                return Float.compare(o1.etichetta, o2.etichetta);
-            }
+        if (this.isMassimizzatore) {
+            n = this.root.figli.stream().filter(f -> {
+                int[] pos = Mossa.posInizialeToInt(f.conf.mossaPrecedente);
+                return this.root.conf.scacchiera[pos[0]][pos[1]].isAlleata();
+            }).max(new Comparator<Nodo>() {
+    
+                @Override
+                public int compare(Nodo o1, Nodo o2) {
+                    return Float.compare(o1.etichetta, o2.etichetta);
+                }
+    
+            }).get();
+        } else {
+            n = this.root.figli.stream().filter(f -> {
+                int[] pos = Mossa.posInizialeToInt(f.conf.mossaPrecedente);
+                return this.root.conf.scacchiera[pos[0]][pos[1]].isAlleata();
+            }).max(new Comparator<Nodo>() {
+    
+                @Override
+                public int compare(Nodo o1, Nodo o2) {
+                    return Float.compare(o1.etichetta, o2.etichetta);
+                }
+    
+            }).get();
+        }
 
-        }).get().conf.mossaPrecedente;
+        
 
-        System.out.println("HO scelto la mossa " + m.toMessage() +  " con index = " + m.index);
+        
+
+        Mossa m = n.conf.mossaPrecedente;
+
+        System.out.println("Scelto mossa " + m.toMessage() +  " con etichetta = " + this.root.etichetta + ", con index = " + 
+            Configurazione.muoviPedinaSimulato(this.root.conf, m, !this.root.isMinimizzatore(), null, true).index);
 
         return m;
 

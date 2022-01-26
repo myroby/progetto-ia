@@ -25,8 +25,8 @@ public class Fission {
 	public Scanner sc;
 
 	public Fission(String[] args) throws UnknownHostException, IOException {
-		this.connetti(args);
-		this.sc = new Scanner(System.in);
+		//this.connetti(args);
+		//this.sc = new Scanner(System.in);
 	}
 
 	public void connetti(String[] args) throws UnknownHostException, IOException {
@@ -41,7 +41,7 @@ public class Fission {
 		long start = System.currentTimeMillis();
 		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 250);
 		System.out.println("Creazione albero = " + (System.currentTimeMillis() - start) + " ms");
-		/*
+		if (colorePedine == Colore.White) {
 		try {
 			File f = new File("Test.txt");
 			FileWriter fl = new FileWriter(f);
@@ -49,7 +49,7 @@ public class Fission {
 			fl.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}*/
+		}}
 	}
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
@@ -101,6 +101,34 @@ public class Fission {
 
 		Mossa mossaAvversaria = new Mossa(false);
 
+		Scanner sc = new Scanner(System.in);
+
+		fission.assegnaColore("White");
+
+		fission.warmup();
+
+		while (true) {
+
+			Mossa mossa = fission.scegliMossa(mossaAlleata);
+
+			fission.albero = fission.albero.eseguiMossa(mossa);
+
+			System.out.println(fission.albero.root.conf.toString());
+
+			String mex = sc.nextLine();
+
+			if (mex.equals("STOP")) sc.close();
+
+			mossaAvversaria.setMossa(mex);
+
+			fission.albero = fission.albero.eseguiMossa(mossaAvversaria);
+
+			System.out.println(fission.albero.root.conf.toString());
+
+		}
+
+		/*
+
 		while ((messaggio = fission.ricevi.readLine()) != null) {
 
 			switch (Fission.getTipoMessaggio(messaggio)) {
@@ -151,11 +179,18 @@ public class Fission {
 
 					fission.termina();
 
-			}
-
+			}/*
+			try {
+				File f = new File("Test.txt");
+				FileWriter fl = new FileWriter(f);
+				fl.write(fission.albero.toString());
+				fl.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}*/
 			//fission.printInfo();
 
-		}
+		//}
 
 	}
 

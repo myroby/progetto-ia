@@ -50,7 +50,8 @@ public class Configurazione {
 
 	public void copiaConfigurazione(Configurazione parent, Colore colorePedine) {
 
-		this.pedineBianche.clear(); this.pedineNere.clear();
+		this.pedineBianche.clear();
+		this.pedineNere.clear();
 
 		this.colorePedine = (parent.colorePedine == Colore.White) ? Colore.Black : Colore.White;
 
@@ -60,10 +61,8 @@ public class Configurazione {
 
 				if (parent.scacchiera[i][j].pedina != null) {
 					this.scacchiera[i][j] = new Cella(this, i, j);
-					this.scacchiera[i][j].pedina = (parent.scacchiera[i][j].pedina == Colore.White) ? Colore.White
-							: Colore.Black;
-					((parent.scacchiera[i][j].pedina == Colore.White) ? this.pedineBianche : this.pedineNere)
-							.add(this.scacchiera[i][j]);
+					this.scacchiera[i][j].pedina = (parent.scacchiera[i][j].pedina == Colore.White) ? Colore.White : Colore.Black;
+					((parent.scacchiera[i][j].pedina == Colore.White) ? this.pedineBianche : this.pedineNere).add(this.scacchiera[i][j]);
 				} else {
 					this.scacchiera[i][j] = new Cella(this, i, j);
 					this.scacchiera[i][j].pedina = null;
@@ -150,7 +149,11 @@ public class Configurazione {
 
 	}
 
-	public static Mossa muoviPedinaSimulato(Configurazione conf, Mossa mossa, boolean isMassimizzatore) {
+	public static Mossa muoviPedinaSimulato(Configurazione conf, Mossa mossa, boolean isMassimizzatore, List<Nodo> figli, boolean noiSiamo) {
+
+		//if (mossa.index != 0) return mossa;
+
+		//Mossa newMossa = new Mossa(new String(mossa.posIniziale), mossa.dir, mossa.alleata);
 
 		Function<Tupla, Tupla> operation = muoviPedinaHelper(mossa.dir);
 
@@ -172,55 +175,103 @@ public class Configurazione {
 				break;
 		}
 
-		mossa.index = (impattoConPedina) ? numPedineEliminate(conf, posCorrente, isMassimizzatore) : 0;
+		// contiene la differenza alleatiUccisi - nemiciUccisi
+		mossa.index = (impattoConPedina) ? numPedineEliminate(conf, posCorrente, isMassimizzatore, noiSiamo) : 0;
+
+		if (figli == null)
+			return mossa;
+
+		Nodo figlio = getFiglioByMossa(mossa, figli);
+
+		if (figlio == null)
+			return mossa;
+
+		float maxNemico = 0f;
+
+		List<Mossa> mosseNemiche = figlio.conf.getMossePossibili().stream().filter(f -> {
+            int[] pos = Mossa.posInizialeToInt(f);
+            return !conf.scacchiera[pos[0]][pos[1]].isAlleata();
+        }).collect(Collectors.toList());
+
+		Mossa a = new Mossa();
+
+		for (Mossa m : mosseNemiche) {
+			Mossa temp = new Mossa(m.posIniziale,m.dir,m.alleata);
+			float indexNemico = Configurazione.muoviPedinaSimulato(figlio.conf, temp, !isMassimizzatore, null, noiSiamo).index;
+			if (indexNemico < -maxNemico) {
+				a = temp;
+				maxNemico = indexNemico;
+			}
+		}
+
+		//if (a.dir != null && mossa.posIniziale.charAt(0) == 'C' && mossa.posIniziale.charAt(1) == '5' && mossa.dir == Direzioni.N
+			//&& mossa.index == 2) System.out.println("C5,N" + mossa.index + " " + maxNemico + " | " + a.toMessage() + "- " + a.index);
+
+		//if (a.dir == null && mossa.posIniziale.charAt(0) == 'B' && mossa.posIniziale.charAt(1) == '4' && mossa.dir == Direzioni.E
+			//) System.out.println(conf.toString());//"B4,E" + mossa.index + " " + maxNemico + " | " + a.toMessage() + " - " +a.index);
+		
+		/*if (mossa.index < maxNemico) {
+			mossa.index -= maxNemico;
+			return mossa;
+		};*/
+
 
 		return mossa;
 
 	}
 
-	private static float numPedineEliminate(Configurazione conf, Tupla posCorrente, boolean isMassimizzatore) {
+	private static float numPedineEliminate(Configurazione conf, Tupla posCorrente, boolean isMassimizzatore, boolean noiSiamoMassimizzatori) {
 		int alleateUccise = 0, nemicheUccise = 0;
 		for (int h = posCorrente.x - 1; h <= posCorrente.x + 1; h++) {
 			for (int k = posCorrente.y - 1; k <= posCorrente.y + 1; k++) {
 				if (h >= 0 && h < NUM_RIGHE && k >= 0 && k < NUM_COLONNE) {
-					if (conf.scacchiera[h][k].isGiocatorePresente() && conf.scacchiera[h][k].isAlleata()) {
-						alleateUccise++;
-					}
-					else if (conf.scacchiera[h][k].isGiocatorePresente() && !conf.scacchiera[h][k].isAlleata()) {
-						nemicheUccise++;
+					if (conf.scacchiera[h][k].isGiocatorePresente()) {
+						if (conf.scacchiera[h][k].pedina == Colore.White) {
+							if (isMassimizzatore) alleateUccise++;
+							else nemicheUccise++;
+						} else if (conf.scacchiera[h][k].pedina == Colore.Black) {
+							if (isMassimizzatore) nemicheUccise++;
+							else alleateUccise++;
+						}
 					}
 				}
 			}
 		}
 
-		// se il numero delle pedine nemiche uccise è pari a quelle alleate non deve essere 0
+		// se il numero delle pedine nemiche uccise è pari a quelle alleate non deve
+		// essere 0
 		// perchè se a noi rimane una pedina allora perdiamo il gioco
 
 		List<Cella> pedineAlleate, pedineAvversarie;
 
 		int differenza = nemicheUccise - alleateUccise;
-
-		if (isMassimizzatore) { 
-			pedineAlleate = conf.pedineBianche; pedineAvversarie = conf.pedineNere; 
+/*
+		if (isMassimizzatore) {
+			pedineAlleate = conf.pedineBianche;
+			pedineAvversarie = conf.pedineNere;
 		} else {
-			pedineAlleate = conf.pedineNere; pedineAvversarie = conf.pedineBianche; 
+			pedineAlleate = conf.pedineNere;
+			pedineAvversarie = conf.pedineBianche;
 		}
 
 		if (differenza == 0) {
 
-			//in questo caso la nostra unica pedina si sta suicidando
-			if (pedineAlleate.size() == alleateUccise) return - Float.MAX_VALUE;
+			// in questo caso la nostra unica pedina si sta suicidando
+			if (pedineAlleate.size() == alleateUccise)
+				return -Float.MAX_VALUE;
 
-			//in questo caso stiamo uccidendo le ultime pedine rimaste all'aversario
-			if (pedineAvversarie.size() == nemicheUccise) return Float.MAX_VALUE;
+			// in questo caso stiamo uccidendo le ultime pedine rimaste all'aversario
+			if (pedineAvversarie.size() == nemicheUccise)
+				return Float.MAX_VALUE;
 
-			// in questo modo uccidere 3 pedine e perderne 3 risulta essere una mossa non conveniente
-			return - 0.1f;
+			// in questo modo uccidere 3 pedine e perderne 3 risulta essere una mossa non
+			// conveniente
+			return -0.1f;
 
 		}
-
+*/
 		return differenza;
-		
+
 	}
 
 	// ritorna una funzione che incrementa una o più coordinate; es:
@@ -332,7 +383,8 @@ public class Configurazione {
 
 		List<Cella> union = (isMassimizzatore) ? pedineBianche : pedineNere;
 
-		return union.stream().map(pedina -> pedina.getMossePossibili()).collect(ArrayList::new, List::addAll,List::addAll);
+		return union.stream().map(pedina -> pedina.getMossePossibili()).collect(ArrayList::new, List::addAll,
+				List::addAll);
 
 	}
 
@@ -346,38 +398,50 @@ public class Configurazione {
 
 	}
 
-	public static Mossa getMossaMigliore(Configurazione conf, boolean isMassimizzatore, List<Nodo> figli) {
+	public static Mossa getMossaMigliore(Configurazione conf, boolean isMassimizzatore, List<Nodo> figli, boolean noiSiamo) {
 
-		Optional<Mossa> mossaMigliore = ((isMassimizzatore) ? conf.pedineBianche : conf.pedineNere)
+		Optional<Mossa> mossaMigliore = null;
+
+		if (isMassimizzatore) {
+			mossaMigliore = ((isMassimizzatore) ? conf.pedineBianche : conf.pedineNere)
 				.stream()
 				.map(pedina -> pedina.getMossePossibili())
 				.flatMap(Collection::stream)
-				.map(mossa -> mossa = Configurazione.muoviPedinaSimulato(conf, mossa, isMassimizzatore))
-				.filter(mossa -> !Configurazione.isMossaDannosa(mossa, figli, isMassimizzatore))
+				.map(mossa -> mossa = Configurazione.muoviPedinaSimulato(conf, mossa, isMassimizzatore, null, noiSiamo))
 				.max(new Mossa()::compare);
+		} else {
+			mossaMigliore = ((isMassimizzatore) ? conf.pedineBianche : conf.pedineNere)
+				.stream()
+				.map(pedina -> pedina.getMossePossibili())
+				.flatMap(Collection::stream)
+				.map(mossa -> mossa = Configurazione.muoviPedinaSimulato(conf, mossa, isMassimizzatore, null, noiSiamo))
+				.min(new Mossa()::compare);
+		}
 
 		if (mossaMigliore.isPresent())
 			return mossaMigliore.get();
 
 		return null;
 	}
-
-	private static boolean isMossaDannosa(Mossa mossa, List<Nodo> figli, boolean isMassimizzatore) {
-
-		if (figli == null) return false;
-
-		Nodo figlio = getFiglioByMossa(mossa, figli);
-
-		if (figlio == null) return false;
-
-		Mossa potenzialeMossaAvversario = getMossaMigliore(figlio.conf, isMassimizzatore, null);
-		
-		if (potenzialeMossaAvversario != null && potenzialeMossaAvversario.index > 0) {
-			return true;
-		}
-
-		return false;
-	}
+	/*
+	 * private static boolean isMossaDannosa(Mossa mossa, List<Nodo> figli, boolean
+	 * isMassimizzatore) {
+	 * 
+	 * if (figli == null) return false;
+	 * 
+	 * Nodo figlio = getFiglioByMossa(mossa, figli);
+	 * 
+	 * if (figlio == null) return false;
+	 * 
+	 * for (Mossa m : figlio.conf.getMossePossibili()) {
+	 * if (Configurazione.muoviPedinaSimulato(figlio.conf, m,
+	 * !isMassimizzatore).index > 0) return true;
+	 * }
+	 * 
+	 * return false;
+	 * 
+	 * }
+	 */
 
 	public static Nodo getFiglioByMossa(Mossa mossa, List<Nodo> figli) {
 		// figli.stream().forEach(f -> System.out.println(f.conf.toString()));

@@ -12,7 +12,7 @@ public class Mossa implements Comparator<Mossa> {
 
     public boolean alleata;
 
-    public float index; // pedineAvversarieUccise - pedineAlleate
+    public float index = 0; // pedineAvversarieUccise - pedineAlleate
 
     public Mossa() {
         super();
@@ -111,6 +111,7 @@ public class Mossa implements Comparator<Mossa> {
 
     @Override
     public int compare(Mossa m1, Mossa m2) {
+        if (m1 == null || m2 == null) return 0; 
         return Float.compare(m1.index, m2.index);
     }
     
