@@ -92,6 +92,10 @@ public class Fission {
 
 	public static void main(String[] args) throws NumberFormatException, UnknownHostException, IOException {
 
+		System.out.println();
+
+		System.out.println("PC | Bianco\n\nTU | Nero\n");
+
 		Fission fission = new Fission(args); 
 
 		String messaggio;
