@@ -23,6 +23,12 @@ public class Mossa implements Comparator<Mossa> {
         this.alleata = alleata;
     }
 
+    public Mossa(String posIniziale, String dir) {
+        super();
+        setPosIniziale(posIniziale);
+        setDir(dir);
+    }
+
     public Mossa(int x, int y, Direzioni dir, boolean alleata) {
         super();
         this.posIniziale = Configurazione.RIGHE[x] + "" + y;
@@ -66,9 +72,8 @@ public class Mossa implements Comparator<Mossa> {
         return new Tupla(riga,colonna);
     }
 
-    public void setMossa(String messaggio) {
-        this.setPosIniziale(messaggio.substring(14, 16));
-        this.setDir(messaggio.substring(17));
+    public static Mossa setMossa(String messaggio) {
+        return new Mossa(messaggio.substring(14, 16), messaggio.substring(17));
     }
 
     @Override

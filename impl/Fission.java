@@ -22,11 +22,9 @@ public class Fission {
 	public Socket socket;
 	public BufferedWriter invia;
 	public BufferedReader ricevi;
-	public Scanner sc;
 
 	public Fission(String[] args) throws UnknownHostException, IOException {
 		//this.connetti(args);
-		//this.sc = new Scanner(System.in);
 	}
 
 	public void connetti(String[] args) throws UnknownHostException, IOException {
@@ -36,11 +34,13 @@ public class Fission {
 	}
 
 	public void warmup() {
-		this.configurazioneCorrente = new Configurazione(Colore.White);
-		this.configurazioneCorrente.colorePedine = Colore.White;
+		this.configurazioneCorrente = new Configurazione(this, colorePedine);
+		this.configurazioneCorrente.colorePedine = colorePedine;
 		long start = System.currentTimeMillis();
+		System.out.println("Sto creando l'albero...");
 		this.albero = new AlberoDiRicerca(this.configurazioneCorrente, colorePedine == Colore.White, 250);
-		System.out.println("Creazione albero = " + (System.currentTimeMillis() - start) + " ms");
+		System.out.println(this.albero.root.conf.toString());
+		System.out.println("Albero creato in " + (System.currentTimeMillis() - start) + " ms");/*
 		if (colorePedine == Colore.White) {
 		try {
 			File f = new File("Test.txt");
@@ -49,11 +49,11 @@ public class Fission {
 			fl.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}}
+		}}*/
 	}
 
 	// aggiorna i valori posIniziale e dir del parametro mossa
-	public Mossa scegliMossa(Mossa mossa) {
+	public Mossa scegliMossa() {
 
 		return this.albero.getMossaMigliore();
 
@@ -77,7 +77,6 @@ public class Fission {
 	}
 
 	public void termina() {
-		this.sc.close();
 		System.exit(0);
 	}
 
@@ -97,9 +96,7 @@ public class Fission {
 
 		String messaggio;
 
-		Mossa mossaAlleata = new Mossa(true);
-
-		Mossa mossaAvversaria = new Mossa(false);
+		Mossa mossaAlleata, mossaAvversaria;
 
 		Scanner sc = new Scanner(System.in);
 
@@ -107,21 +104,35 @@ public class Fission {
 
 		fission.warmup();
 
+		System.out.println();
+
 		while (true) {
 
-			Mossa mossa = fission.scegliMossa(mossaAlleata);
+			System.out.println("Sto scegliendo la mossa...\n");
+
+			Mossa mossa = fission.scegliMossa();
+
+			System.out.println("Ho scelto la mossa: " + mossa.toMessage() + "\n");
+
+			System.out.println("Sto aggiornando l'albero...\n");
 
 			fission.albero = fission.albero.eseguiMossa(mossa);
 
 			System.out.println(fission.albero.root.conf.toString());
 
+			System.out.print("Inserisci la mossa nel formato: <RigaColonna,Direzione>, ad esempio: A2,S > ");
+
 			String mex = sc.nextLine();
 
 			if (mex.equals("STOP")) sc.close();
 
-			mossaAvversaria.setMossa(mex);
+			mossaAvversaria = Mossa.setMossa("OPPONENT_MOVE " + mex);
+
+			System.out.println("\nHai scelto la mossa: " + mossaAvversaria.toMessage() + "\n");
 
 			fission.albero = fission.albero.eseguiMossa(mossaAvversaria);
+
+			System.out.println("Sto aggiornando l'albero...\n");
 
 			System.out.println(fission.albero.root.conf.toString());
 
@@ -145,27 +156,29 @@ public class Fission {
 
 					long start = System.currentTimeMillis();
 
-					Mossa mossa = fission.scegliMossa(mossaAlleata);
+					mossaAlleata = fission.scegliMossa();
 
 					System.out.println("Scelta mossa = " + (System.currentTimeMillis() - start) + " ms");
 
-					fission.inviaMossa(mossa);
+					fission.inviaMossa(mossaAlleata);
 
 					start = System.currentTimeMillis();
 
-					fission.albero = fission.albero.eseguiMossa(mossa);
+					fission.albero = fission.albero.eseguiMossa(mossaAlleata);
 
-					System.out.println("Aggiornamneto albero = " + (System.currentTimeMillis() - start) + " ms");
+					System.out.println("Aggiornamento albero = " + (System.currentTimeMillis() - start) + " ms");
 					
 					break;
 				
 				case OpponentMove : 
 
-					mossaAvversaria.setMossa(messaggio);
+					mossaAvversaria = Mossa.setMossa(messaggio);
 
 					start = System.currentTimeMillis();
 
 					fission.albero = fission.albero.eseguiMossa(mossaAvversaria);
+
+					System.out.println("eseguo mossa " + mossaAvversaria.toMessage() + "\n"+fission.albero.root.conf.toString());
 
 					System.out.println("Aggiornamneto albero = " + (System.currentTimeMillis() - start) + " ms");					
 
@@ -179,7 +192,7 @@ public class Fission {
 
 					fission.termina();
 
-			}/*
+			}
 			try {
 				File f = new File("Test.txt");
 				FileWriter fl = new FileWriter(f);
@@ -187,10 +200,10 @@ public class Fission {
 				fl.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}*/
+			}
 			//fission.printInfo();
 
-		//}
+		}*/
 
 	}
 
